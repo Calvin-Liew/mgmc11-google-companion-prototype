@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { Link, Route, Routes, useLocation, useParams } from "react-router-dom";
 import "./App.css";
 
 type Persona = "student" | "professional";
@@ -47,7 +48,12 @@ type DocumentCanvas = {
   inlineTips: string[];
 };
 
-type ChatEntry = { role: "agent" | "user"; text: string };
+type ChatEntry = {
+  role: "agent" | "user";
+  text: string;
+  linkLabel?: string;
+  linkTo?: string;
+};
 type StatCard = {
   id: string;
   label: string;
@@ -242,6 +248,14 @@ const driveFiles: Record<Persona, DriveFile[]> = {
   ],
 };
 
+const allDriveFiles: DriveFile[] = [
+  ...driveFiles.student,
+  ...driveFiles.professional,
+];
+
+const findDriveFile = (fileId?: string) =>
+  allDriveFiles.find((file) => file.id === fileId);
+
 const fileHighlights: Record<string, string[]> = {
   syllabus: [
     "10-week outline parsed into Drive folders by week.",
@@ -325,6 +339,66 @@ const whisperSuggestions: Record<Persona, WhisperSuggestion[]> = {
     },
   ],
 };
+
+type CannedResponse = {
+  triggers: string[];
+  persona?: Persona;
+  fileId?: string;
+  text: string;
+  linkLabel?: string;
+  linkTo?: string;
+};
+
+const cannedGlobalResponses: CannedResponse[] = [
+  {
+    triggers: ["syllabus", "schedule", "cs 241"],
+    persona: "student",
+    fileId: "syllabus",
+    text: "📘 CS 241 Plan (Docs) is up. I can spin a Sheets tracker or share the Slides summary whenever you’re ready.",
+    linkLabel: "Jump to CS 241 Plan",
+    linkTo: "/doc/syllabus",
+  },
+  {
+    triggers: ["reading pack", "reader", "pdf"],
+    persona: "student",
+    fileId: "reading",
+    text: "📝 Smart Reading Pack already condensed the Week 3 Reader → 1-page Docs brief + Slides deck + Sheets flashcards.",
+    linkLabel: "Open Week 3 Reader",
+    linkTo: "/doc/reading",
+  },
+  {
+    triggers: ["concept map", "notes"],
+    persona: "student",
+    fileId: "notes",
+    text: "🧠 Neural Net Notes are linked to lecture audio. Want me to spotlight a risky branch in the Slides concept map?",
+    linkLabel: "Open Living Map",
+    linkTo: "/doc/notes",
+  },
+  {
+    triggers: ["meeting recap", "cx sync", "chief of staff"],
+    persona: "professional",
+    fileId: "meeting",
+    text: "📄 CX Sync Doc is ready — summary, decisions, and owners are staged. Should I drop the Gmail recap in drafts?",
+    linkLabel: "Review CX Sync Doc",
+    linkTo: "/doc/meeting",
+  },
+  {
+    triggers: ["vendor", "executive brief", "dashboard"],
+    persona: "professional",
+    fileId: "vendor",
+    text: "📊 Vendor KPIs Slides became an exec brief with talking points + mitigation steps. Ready for leadership?",
+    linkLabel: "Open Vendor KPIs",
+    linkTo: "/doc/vendor",
+  },
+  {
+    triggers: ["calendar", "focus block", "rhythm"],
+    persona: "professional",
+    fileId: "calendar",
+    text: "🗓️ Calendar Pulse flagged the overload. I can insert a focus block and ping the attendees automatically.",
+    linkLabel: "View Calendar Pulse",
+    linkTo: "/doc/calendar",
+  },
+];
 
 const demoSteps: DemoStep[] = [
   {
@@ -590,16 +664,16 @@ const documentCanvases: Record<string, DocumentCanvas> = {
         id: "week1",
         heading: "Week 1 · Foundations + deliverables",
         excerpt:
-          "Week 1 covers linear algebra refreshers and introduces the semester-long design sprint.",
+          "Week 1 covers linear algebra refreshers, studio onboarding, and introduces the semester-long design sprint. Companion expanded every bullet into full paragraphs so faculty can drop in clarifying notes without losing the pacing. Deliverables, rubrics, and reading packs now live inline so the doc reads like the final PDF.",
         insight:
-          "Companion captured the sprint milestones and built a Week 1 checklist in Tasks.",
+          "Companion captured the sprint milestones, expanded them into trackable tasks, and built a Week 1 checklist in Tasks.",
         action: "Ask Companion to pin this checklist inside Calendar + Todo.",
       },
       {
         id: "week3",
         heading: "Week 3 · Research translation",
         excerpt:
-          "Readings and lab reflections due Thursday; proposal pitch due Monday.",
+          "Readings and lab reflections are still due Thursday while the proposal pitch lands Monday. The doc now includes the full prompt, evaluation criteria, and side notes from last semester so students can contextualise expectations. Companion threads references back to Drive folders automatically so no citation gets lost.",
         insight:
           "Study blocks already inserted on Tue/Thu evenings to prevent cramming.",
         action: "Adjust tempo? Companion can slide the blocks if labs shift.",
@@ -608,16 +682,26 @@ const documentCanvases: Record<string, DocumentCanvas> = {
         id: "grading",
         heading: "Grading model",
         excerpt:
-          "Projects 45%, labs 35%, exams 20%. Participation modifies final +/- 3%.",
+          "Projects weigh 45%, labs 35%, exams 20%, and participation modifies the final mark by +/-3%. Companion added an expanded explanation of how resubmissions work plus an FAQ block for late days. The layout mirrors the registrar PDF so students can print without re-formatting.",
         insight:
           "Drive Companion tagged each artifact with its weighting so reminders escalate appropriately.",
         action: "Open dashboard to see how prep time stacks against weighting.",
       },
+      {
+        id: "capstone",
+        heading: "Capstone scaffolding",
+        excerpt:
+          "Capstone scaffolding spans Weeks 8-12 with milestone reviews, narrative drafts, and mentor office hours. The doc now holds the full timeline, example briefs, and a checklist of cross-functional deliverables. Companion linked previous cohorts' winning decks so inspiration is one click away.",
+        insight:
+          "Companion mirrored the rubric and turned each milestone into an assignable task.",
+        action:
+          "Invite teammates to this doc so ownership shows up in Drive activity.",
+      },
     ],
     inlineTips: [
-      "Auto-populated calendar holds for every due date.",
-      "Weekly Drive folders created automatically.",
-      "Flashcards spin up whenever a reading is attached.",
+      "Auto-populated calendar holds for every due date now include recommended buffer suggestions.",
+      "Weekly Drive folders spin up automatically with template Docs, Slides, and Sheets checklists.",
+      "Flashcards generate whenever a reading is attached, and the doc links directly to the Sheets deck.",
     ],
   },
   reading: {
@@ -629,24 +713,45 @@ const documentCanvases: Record<string, DocumentCanvas> = {
         id: "thesis",
         heading: "Core thesis",
         excerpt:
-          "Retrieval-tuned prompts outperform static outlines in attention tasks.",
+          "Retrieval-tuned prompts outperform static outlines in attention tasks. Companion pulled the full abstract, supporting paragraphs, and footnotes so the doc reads like the original PDF. Margin comments explain why each paragraph matters for the Week 3 lab.",
         insight:
-          "Companion highlighted the thesis + graphs and drafted a 6-slide summary.",
+          "Companion highlighted the thesis, graphs, and drafted a 6-slide summary.",
         action: "Open slides or ask for a 90-sec talking track.",
       },
       {
         id: "lab",
         heading: "Lab relevance",
         excerpt:
-          "Section 3 mirrors the Week 3 lab prompt and references Diaz 2024.",
+          "Section 3 mirrors the Week 3 lab prompt and references Diaz 2024. Companion embedded sidebars summarising every cited experiment plus a callout reminding you which variables appear in the rubric. The doc feels like a full chapter with context-specific highlights.",
         insight:
-          "Companion linked the citation to your Notes + added a flashcard suggestion.",
+          "Companion linked the citation to your Notes and added a flashcard suggestion.",
         action: "Send flashcards to Sheets so you can review on mobile.",
+      },
+      {
+        id: "figures",
+        heading: "Annotated figures + callouts",
+        excerpt:
+          "Pages 18-23 now include full-resolution figure captions, margin notes, and Companion-generated comparisons against Diaz 2024. The doc highlights where gradients spike and explains how that affects lab write-ups. Each paragraph feels like a real PDF instead of placeholder copy.",
+        insight:
+          "AI annotations flag every figure that maps to the Week 3 rubric and store the context for future prompts.",
+        action:
+          "Jump to the annotated figure pack or ask for a Loom-ready walkthrough.",
+      },
+      {
+        id: "discussion",
+        heading: "Seminar discussion prep",
+        excerpt:
+          "The closing discussion spans three paragraphs recapping methodology, limitations, and open questions. Companion appended example talking points for seminar debates and mapped them to flashcards. Students can scroll the doc like an actual Google Doc preview without missing nuance.",
+        insight:
+          "Companion pre-drafted a one-page discussion summary you can drop into Slides or Sheets.",
+        action:
+          "Send the summary to Gmail or append it to the Slides discussion deck.",
       },
     ],
     inlineTips: [
-      "Flashcards already staged in Sheets.",
-      "Suggested follow-up question: “Pull figures for Lab 03.”",
+      "Flashcards already staged in Sheets with context pulled directly from the doc.",
+      'Suggested follow-up question: "Pull figures for Lab 03."',
+      "Use Mark as reviewed once each section is summarised so Companion tracks progress.",
     ],
   },
   notes: {
@@ -658,23 +763,35 @@ const documentCanvases: Record<string, DocumentCanvas> = {
         id: "chain",
         heading: "Backprop audio snippet",
         excerpt:
-          "“Remember to compare gradient flow against Week 3 reading figures.”",
+          "Audio snippets from Lecture 5 are transcribed paragraph by paragraph with timestamps. The doc includes inline screenshots of the whiteboard plus references back to Week 3 reading figures. Companion surfaces contextual tooltips so it feels like a living document.",
         insight:
-          "Companion transcribed and linked the audio to the reading + flashcards.",
+          "Companion transcribed and linked the audio to the reading and flashcards.",
         action: "Open Slides concept map with this branch highlighted.",
       },
       {
         id: "risk",
         heading: "Cramming risk",
-        excerpt: "Multiple TODO tags still unresolved for Lab 02.",
+        excerpt:
+          "Multiple TODO tags remain unresolved for Lab 02, and Companion now expands each TODO into a sentence describing blockers. The doc also stores your previous mitigation attempts, giving the page more density. Scroll like a real doc to see every action item.",
         insight:
           "Companion nudged the Exam Prep plan to reclaim a Friday block.",
         action: "Accept or decline the suggested block.",
       },
+      {
+        id: "review",
+        heading: "Weekly review wrap",
+        excerpt:
+          "Weekly review blocks close the doc with a narrative summary, open questions, and links to upcoming office hours. Companion layered in colour-coded annotations for conceptual gaps and automatically linked the Loom recap. It reads like the final packet you would share with a study group.",
+        insight:
+          "Companion spotted duplicate prep tasks and merged them into a single reminder thread.",
+        action:
+          "Accept the merged reminder or ask for a spaced-repetition plan.",
+      },
     ],
     inlineTips: [
-      "Drive Whisper can bundle recordings with related notes.",
-      "Voice button stays hot even when doc is full screen.",
+      "Drive Whisper can bundle recordings with related notes and push them into Slides.",
+      "Voice button stays hot even when the doc is full screen for hands-free annotations.",
+      "Companion shows inline badges wherever action items or risks stack up.",
     ],
   },
   meeting: {
@@ -685,24 +802,35 @@ const documentCanvases: Record<string, DocumentCanvas> = {
       {
         id: "summary",
         heading: "Highlights",
-        excerpt: "Volume down 8%; EU beta greenlit; risk flagged on SLA.",
+        excerpt:
+          "Volume down 8%, EU beta greenlit, and risk flagged on SLA. Companion pulled the full discussion transcript, follow-up questions, and decision log so the doc mimics a real meeting recap. Paragraphs include owners, timestamps, and attachments.",
         insight:
-          "Companion drafted the exec recap with decisions + owners pre-filled.",
+          "Companion drafted the exec recap with decisions and owners pre-filled.",
         action: "Send recap to stakeholders or push to Spaces.",
       },
       {
         id: "memory",
         heading: "Organisational memory",
         excerpt:
-          "Last meeting requested vendor audit follow-up and KPI roll-over.",
+          "Last meeting requested vendor audit follow-up and KPI roll-over, and that context is now written out in two paragraphs. Prior decisions are quoted inline so anyone scanning the doc understands why a task exists. The doc reads like the canonical team memory.",
         insight:
-          "Agent reminds you “Would you like to carry forward last quarter’s KPIs?”",
+          'Agent reminds you "Would you like to carry forward last quarter\'s KPIs?"',
         action: "Insert prior KPIs into the doc with one click.",
+      },
+      {
+        id: "owners",
+        heading: "Owner matrix",
+        excerpt:
+          "Action items are listed in long-form sentences with owner names, due dates, and dependencies. Companion cross-links each owner to their Drive workspace so context follows them. It feels like an actual Google Doc section rather than a placeholder table.",
+        insight:
+          "Companion auto-tagged each action with a primary owner and pulled their workspace context.",
+        action: "Send owners a digest or reassign with one click.",
       },
     ],
     inlineTips: [
-      "Action items sync to Tasks + Asana automatically.",
-      "Calendar holds auto-update when deadlines shift.",
+      "Action items sync to Tasks and Asana automatically, including context links.",
+      "Calendar holds auto-update when deadlines shift so the doc always reflects reality.",
+      'Use "Highlight risks" to have Companion annotate any blocker paragraphs in red.',
     ],
   },
   vendor: {
@@ -713,23 +841,35 @@ const documentCanvases: Record<string, DocumentCanvas> = {
       {
         id: "kpi",
         heading: "KPI snapshot",
-        excerpt: "SLA compliance dipped to 93% (target 97%).",
+        excerpt:
+          "SLA compliance dipped to 93% (target 97%) and Companion spells out the underlying causes in two chunky paragraphs. Charts are embedded as static previews so leadership can skim without opening Slides. Narrative notes capture last quarter's comparisons.",
         insight:
           "Companion surfaced the delta and proposed mitigation talking points.",
-        action: "Push the brief to Gmail draft addressed to leadership.",
+        action: "Push the brief to a Gmail draft addressed to leadership.",
       },
       {
         id: "risk",
         heading: "Risk + deadline alert",
-        excerpt: "Onboarding queue aging threatens next week’s rollout.",
+        excerpt:
+          "Onboarding queue aging threatens next week's rollout, and the doc now explains exactly which regions are impacted. Companion added an AI annotation in-line with remediation paths and the dates those tasks collide with other launches.",
         insight:
-          "Agent suggests blocking 3–4 PM focus time + sending risk brief.",
+          "Agent suggests blocking 3-4 PM focus time and sending a risk brief.",
         action: "Accept focus block or ask to rebalance the day.",
+      },
+      {
+        id: "expansion",
+        heading: "Expansion brief",
+        excerpt:
+          "The final section reads like a mini whitepaper covering expansion criteria, procurement hurdles, and stakeholder quotes. Companion stitches data from Sheets so the doc automatically refreshes when KPIs move. Longer paragraphs keep leadership in context even without dashboards.",
+        insight:
+          "Companion paired the expansion narrative with an executive talking-point script.",
+        action: "Export the script to Slides or send it to the CEO brief doc.",
       },
     ],
     inlineTips: [
-      "Executive summary auto-updates as Slides change.",
-      "Ask “Show me sentiment trend for Q2” anytime.",
+      "Executive summary auto-updates as Slides change so numbers stay fresh.",
+      'Ask "Show me sentiment trend for Q2" anytime to drop a paragraph directly into the doc.',
+      "Use the Insert KPI button to pull any metric from Sheets without leaving the doc.",
     ],
   },
   calendar: {
@@ -740,7 +880,8 @@ const documentCanvases: Record<string, DocumentCanvas> = {
       {
         id: "density",
         heading: "Calendar density",
-        excerpt: "Afternoon over 86% booked; no buffers before vendor review.",
+        excerpt:
+          "Afternoon is over 86% booked and there are no buffers before the vendor review. Companion explains how each block was categorised and which meetings are flexible. The doc feels like a narrative audit you could forward to an EA.",
         insight:
           "Companion recommends sliding two internal syncs and inserting a focus block.",
         action: "Approve the rebalance and notify attendees automatically.",
@@ -748,15 +889,27 @@ const documentCanvases: Record<string, DocumentCanvas> = {
       {
         id: "health",
         heading: "Schedule health",
-        excerpt: "Commute blocks not accounted for; context switches 7x.",
+        excerpt:
+          "Commute blocks are not accounted for and context switches hit seven times in four hours. Companion rewrites that data into full sentences so the doc resembles a consulting-style memo. The annotation also lists suggested async swaps.",
         insight:
-          "Agent suggests compressing prep time + offering async updates.",
-        action: "Send quick Loom recap via Gmail template.",
+          "Agent suggests compressing prep time and offering async updates.",
+        action: "Send a quick Loom recap via Gmail template.",
+      },
+      {
+        id: "handoffs",
+        heading: "Handoff planner",
+        excerpt:
+          "The final section maps every meeting to its doc, owner, and next action so handoffs are explicit. Companion injects extra paragraphs for flagged risks and upcoming travel days. It reads like a proper calendar briefing you could drop into Google Docs.",
+        insight:
+          "Companion created a shared handoff doc and linked every meeting artifact automatically.",
+        action:
+          "Open the handoff doc or ask to include stakeholders on the distribution list.",
       },
     ],
     inlineTips: [
-      "Voice: “Companion, protect 3–4 PM daily this week.”",
-      "Drive Whisper surfaces overload alerts before burnout.",
+      'Voice: "Companion, protect 3-4 PM daily this week" and the doc logs the change.',
+      "Drive Whisper surfaces overload alerts before burnout and writes them into the summary.",
+      "Use Re-run pulse to refresh this document whenever the calendar shifts.",
     ],
   },
 };
@@ -775,30 +928,43 @@ function App() {
   const [selectedFileId, setSelectedFileId] = useState<string>(
     driveFiles.student[0].id
   );
-  const [companionExpanded, setCompanionExpanded] = useState(false);
   const [docCanvasOpen, setDocCanvasOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
-  const [chatLog, setChatLog] = useState<ChatEntry[]>(() =>
-    initialChat(driveFiles.student[0])
-  );
+  const [chatHistory, setChatHistory] = useState<Record<Persona, ChatEntry[]>>({
+    student: initialChat(driveFiles.student[0]),
+    professional: initialChat(driveFiles.professional[0]),
+  });
   const [voiceModeOpen, setVoiceModeOpen] = useState(false);
-  const [globalChatOpen, setGlobalChatOpen] = useState(false);
   const [globalPrompt, setGlobalPrompt] = useState("");
-  const [globalChatLog, setGlobalChatLog] = useState<ChatEntry[]>([
-    {
-      role: "agent",
-      text: "Hey! I’m watching Drive + Calendar. Need a study plan, summary, or exec brief?",
-    },
-  ]);
+  const [globalChatHistory, setGlobalChatHistory] = useState<
+    Record<Persona, ChatEntry[]>
+  >({
+    student: [
+      {
+        role: "agent",
+        text: "Hey! I’m watching Drive + Calendar for your courses. Need Docs summaries, Slides, or Sheets trackers?",
+      },
+    ],
+    professional: [
+      {
+        role: "agent",
+        text: "Hey! I’m watching Drive + Calendar for ops. Need Slides briefs, Gmail recaps, or Sheets KPIs?",
+      },
+    ],
+  });
   const tourTrackRef = useRef<HTMLDivElement>(null);
   const [tourCollapsed, setTourCollapsed] = useState(false);
   const [pendingFileId, setPendingFileId] = useState<string | null>(null);
+  const location = useLocation();
+  const [displayLocation, setDisplayLocation] = useState(location);
+  const [transitionStage, setTransitionStage] = useState<
+    "fade-in" | "fade-out"
+  >("fade-in");
 
   useEffect(() => {
     const first = driveFiles[persona][0];
     setSelectedFileId(first.id);
     setDocCanvasOpen(false);
-    setChatLog(initialChat(first));
   }, [persona]);
 
   const filesForPersona = driveFiles[persona];
@@ -811,8 +977,18 @@ function App() {
   const calendarFeed = calendarEntries[persona];
 
   useEffect(() => {
-    setChatLog(initialChat(selectedFile));
-  }, [selectedFile]);
+    if (!selectedFile) return;
+    setChatHistory((prev) => ({
+      ...prev,
+      [persona]: [
+        ...prev[persona],
+        {
+          role: "agent",
+          text: `Switched focus to ${selectedFile.name}. Ask me to open it in ${selectedFile.type}, sync it to Calendar, or prep a recap.`,
+        },
+      ],
+    }));
+  }, [selectedFile, persona]);
 
   useEffect(() => {
     if (pendingFileId) {
@@ -822,6 +998,22 @@ function App() {
     }
   }, [pendingFileId, persona]);
 
+  useEffect(() => {
+    if (location !== displayLocation) {
+      setTransitionStage("fade-out");
+    }
+  }, [location, displayLocation]);
+
+  useEffect(() => {
+    if (transitionStage === "fade-out") {
+      const timeout = window.setTimeout(() => {
+        setDisplayLocation(location);
+        setTransitionStage("fade-in");
+      }, 250);
+      return () => window.clearTimeout(timeout);
+    }
+  }, [transitionStage, location]);
+
   const currentStep = demoSteps.find(
     (step) => step.persona === persona && step.fileId === selectedFile?.id
   );
@@ -830,26 +1022,39 @@ function App() {
     setPersona(card.persona);
     setSelectedFileId(card.fileId);
     setDocCanvasOpen(false);
-    setCompanionExpanded(false);
+  };
+
+  const sendGlobalPrompt = (question: string) => {
+    const scripted = getGlobalScriptedResponse(question, persona);
+    setGlobalChatHistory((prev) => ({
+      ...prev,
+      [persona]: [
+        ...prev[persona],
+        { role: "user", text: question },
+        scripted.entry,
+      ],
+    }));
+    if (scripted.persona && scripted.persona !== persona) {
+      setPersona(scripted.persona);
+      if (scripted.fileId) {
+        setPendingFileId(scripted.fileId);
+      }
+    } else if (scripted.fileId) {
+      setSelectedFileId(scripted.fileId);
+      setDocCanvasOpen(false);
+    }
   };
 
   const handleGlobalPromptSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!globalPrompt.trim()) return;
-
-    const contextName = selectedFile ? selectedFile.name : "your workspace";
-    const personaTone =
-      persona === "student"
-        ? "I’ll refresh the study timeline and flashcards"
-        : "I’ll prep the executive brief and update Calendar";
-    const response = `${personaTone} for ${contextName}. Want me to push it to Calendar, Sheets, or Gmail?`;
-
-    setGlobalChatLog((prev) => [
-      ...prev,
-      { role: "user", text: globalPrompt.trim() },
-      { role: "agent", text: response },
-    ]);
+    const normalizedPrompt = globalPrompt.trim();
+    if (!normalizedPrompt) return;
+    sendGlobalPrompt(normalizedPrompt);
     setGlobalPrompt("");
+  };
+
+  const handleCannedGlobalPrompt = (trigger: string) => {
+    sendGlobalPrompt(trigger);
   };
 
   const spotlightId =
@@ -920,18 +1125,133 @@ function App() {
     tourTrackRef.current.scrollBy({ left: delta, behavior: "smooth" });
   };
 
+  const scriptedCompanionReplies: {
+    triggers: string[];
+    persona?: Persona;
+    response: string;
+  }[] = [
+    {
+      triggers: ["syllabus", "plan", "week"],
+      persona: "student",
+      response:
+        "Docs link: https://drive.google.com/cs241-plan (demo)\nI pinned the Sheets study tracker and Calendar tasks for Week 1.",
+    },
+    {
+      triggers: ["reading", "summary", "slides"],
+      persona: "student",
+      response:
+        "Smart Reading Pack is ready. Open the Docs summary, Slides deck, or Sheets flashcards whenever you’re ready to study.",
+    },
+    {
+      triggers: ["concept", "map", "notes"],
+      persona: "student",
+      response:
+        "Neural Net Notes are linked to Lecture 5 audio. Want me to highlight risky sections and push them to Slides?",
+    },
+    {
+      triggers: ["meeting", "recap", "email"],
+      persona: "professional",
+      response:
+        "Drafted the Gmail recap for CX Sync with decisions + owners attached. Should I send it?",
+    },
+    {
+      triggers: ["vendor", "brief", "kpi"],
+      persona: "professional",
+      response:
+        "Vendor KPIs Slides have already been distilled into an executive brief. I can attach the Sheets dashboard if needed.",
+    },
+    {
+      triggers: ["calendar", "overload", "rebalance"],
+      persona: "professional",
+      response:
+        "Calendar Pulse flagged the crunch. I can insert a focus block and update attendees automatically.",
+    },
+  ];
+
+  const scriptedGlobalReplies = [
+    {
+      triggers: ["docs demo", "docs page"],
+      response:
+        "Use the Docs demo page (/docs-demo) to show how syllabi flow into Docs summaries, Slides decks, and Sheets trackers.",
+    },
+    {
+      triggers: ["ops demo", "vendor page", "pro demo"],
+      response:
+        "Check /ops-demo for the professional workflow: Slides briefs, Gmail recaps, and Sheets KPIs.",
+    },
+    {
+      triggers: ["share", "link"],
+      response:
+        "Here’s a mock Drive link for CS 241 Plan: https://drive.google.com/file/d/CS241 (demo).",
+    },
+  ];
+
+  const getScriptedResponse = (
+    question: string,
+    personaContext: Persona,
+    file?: DriveFile
+  ) => {
+    const lower = question.toLowerCase();
+    const match = scriptedCompanionReplies.find(
+      (entry) =>
+        entry.triggers.some((trigger) => lower.includes(trigger)) &&
+        (!entry.persona || entry.persona === personaContext)
+    );
+    if (match) return match.response;
+    if (file) {
+      return `Here’s the ${file.status.toLowerCase()} for ${
+        file.name
+      }: I can open it in ${file.type}, sync it to Calendar, or prep a brief.`;
+    }
+    return "I’m still watching Drive — ask me about Docs, Sheets, or Slides anytime.";
+  };
+
+  const getGlobalScriptedResponse = (
+    question: string,
+    personaContext: Persona
+  ): { entry: ChatEntry; persona?: Persona; fileId?: string } => {
+    const lower = question.toLowerCase();
+    const canned = cannedGlobalResponses.find(
+      (entry) =>
+        entry.triggers.some((trigger) => lower.includes(trigger)) &&
+        (!entry.persona || entry.persona === personaContext)
+    );
+    if (canned) {
+      return {
+        entry: {
+          role: "agent",
+          text: canned.text,
+          linkLabel: canned.linkLabel,
+          linkTo: canned.linkTo,
+        },
+        persona: canned.persona,
+        fileId: canned.fileId,
+      };
+    }
+    const match = scriptedGlobalReplies.find((entry) =>
+      entry.triggers.some((trigger) => lower.includes(trigger))
+    );
+    const fallbackText = match
+      ? match.response
+      : personaContext === "student"
+      ? "Student workspace is synced — I can spin up study plans, reading packs, or exam trackers directly from Drive."
+      : "Professional workspace stays aligned — Slides briefs, Gmail recaps, and Sheets KPIs are ready on cue.";
+    return { entry: { role: "agent", text: fallbackText } };
+  };
+
   const handlePromptSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!prompt.trim() || !selectedFile) return;
     const question = prompt.trim();
-    const response = `Here’s the ${selectedFile.status.toLowerCase()} for ${
-      selectedFile.name
-    }: I can push action items, update Calendar, or prep a shareable brief.`;
-    setChatLog((prev) => [
+    const response = getScriptedResponse(question, persona, selectedFile);
+    setChatHistory((prev) => ({
       ...prev,
-      { role: "user", text: question },
-      { role: "agent", text: response },
-    ]);
+      [persona]: [
+        ...prev[persona],
+        { role: "user", text: question },
+        { role: "agent", text: response },
+      ],
+    }));
     setPrompt("");
   };
 
@@ -1350,9 +1670,9 @@ function App() {
             </span>
           </div>
           <div className="doc-actions">
-            <button onClick={() => setCompanionExpanded(true)}>
-              Open Companion canvas
-            </button>
+            <Link className="ghost" to="/companion">
+              Open Companion chat
+            </Link>
             <button className="primary">Share</button>
           </div>
         </div>
@@ -1404,6 +1724,7 @@ function App() {
     );
   };
 
+  const chatLog = chatHistory[persona];
   const companionChat = (
     <div className="chat-stack hero">
       <div className="chat-feed">
@@ -1412,7 +1733,12 @@ function App() {
             key={`${entry.role}-${index}`}
             className={`chat-bubble ${entry.role}`}
           >
-            {entry.text}
+            <span>{entry.text}</span>
+            {entry.linkTo && (
+              <Link className="chat-link" to={entry.linkTo}>
+                {entry.linkLabel ?? "Open"}
+              </Link>
+            )}
           </div>
         ))}
       </div>
@@ -1426,8 +1752,7 @@ function App() {
       </form>
     </div>
   );
-
-  return (
+  const dashboardPage = (
     <div className="drive-app">
       <header className="google-bar">
         <div className="google-left">
@@ -1474,6 +1799,11 @@ function App() {
         </nav>
 
         <section className="content-area">
+          <div className="demo-links">
+            <Link to="/">Dashboard</Link>
+            <Link to="/docs-demo">Docs demo</Link>
+            <Link to="/ops-demo">Ops demo</Link>
+          </div>
           <div className="content-header">
             <div>
               <span className="eyebrow">{personaConfig[persona].title}</span>
@@ -1513,13 +1843,9 @@ function App() {
                       : "Connected to Drive + Calendar."}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  className="ghost subtle"
-                  onClick={() => setCompanionExpanded(true)}
-                >
-                  Pop out
-                </button>
+                <Link className="ghost subtle" to="/companion">
+                  Open companion
+                </Link>
               </div>
               <div className="chat-suggestions-row">
                 {chatPromptChips.map((chip) => (
@@ -1669,6 +1995,9 @@ function App() {
                     </div>
                     <div className="file-status-row">
                       <span>{file.status}</span>
+                      <Link className="text-link" to={`/doc/${file.id}`}>
+                        Open doc
+                      </Link>
                     </div>
                   </div>
                 ))}
@@ -1681,13 +2010,9 @@ function App() {
                   <h4>Drive Companion</h4>
                   <p>{personaConfig[persona].status}</p>
                 </div>
-                <button
-                  type="button"
-                  className="ghost"
-                  onClick={() => setCompanionExpanded(true)}
-                >
-                  Open canvas
-                </button>
+                <Link className="ghost" to="/companion">
+                  Open companion
+                </Link>
               </div>
               <div className="proactive-banner">
                 {persona === "student"
@@ -1716,82 +2041,80 @@ function App() {
           </div>
         </section>
 
-        {!companionExpanded && (
-          <aside className="sidebar-stack">
-            <div className="panel calendar-panel mini">
-              <div className="panel-head">
-                <div>
-                  <h4>Calendar sync</h4>
-                  <p>Today’s schedule at a glance.</p>
-                </div>
-                <button type="button" className="ghost">
-                  Open Calendar
-                </button>
+        <aside className="sidebar-stack">
+          <div className="panel calendar-panel mini">
+            <div className="panel-head">
+              <div>
+                <h4>Calendar sync</h4>
+                <p>Today’s schedule at a glance.</p>
               </div>
-              <div className="calendar-list compact">
-                {calendarFeed.map((entry) => (
-                  <div key={entry.id} className="calendar-item">
-                    <div className="calendar-pill">
-                      <strong>{entry.day}</strong>
-                      <span>{entry.time}</span>
+              <button type="button" className="ghost">
+                Open Calendar
+              </button>
+            </div>
+            <div className="calendar-list compact">
+              {calendarFeed.map((entry) => (
+                <div key={entry.id} className="calendar-item">
+                  <div className="calendar-pill">
+                    <strong>{entry.day}</strong>
+                    <span>{entry.time}</span>
+                  </div>
+                  <div className="calendar-body">
+                    <h5>{entry.title}</h5>
+                    <p>{entry.meta}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="section-card sidebar-whisper">
+            <div className="chat-header">
+              <div>
+                <strong>Drive Whisper</strong>
+                <span>One-tap nudges</span>
+              </div>
+              <button type="button" className="ghost">
+                Automations
+              </button>
+            </div>
+            <div className="suggestion-list roomy">
+              {whisperSuggestions[persona].map((tip) => (
+                <article
+                  key={tip.message}
+                  className={`suggestion ${tip.tone}`}
+                  role="alert"
+                >
+                  <div className="suggestion-header">
+                    <span className="suggestion-chip">Drive Whisper</span>
+                    <span className="suggestion-time">{tip.time}</span>
+                  </div>
+                  <div className="suggestion-body">
+                    <div className="suggestion-icon" aria-hidden="true">
+                      {tip.tone === "alert"
+                        ? "⚠️"
+                        : tip.tone === "plan"
+                        ? "✨"
+                        : "🔔"}
                     </div>
-                    <div className="calendar-body">
-                      <h5>{entry.title}</h5>
-                      <p>{entry.meta}</p>
+                    <div className="suggestion-content">
+                      <p className="suggestion-message">{tip.message}</p>
                     </div>
                   </div>
-                ))}
-              </div>
+                  <div className="suggestion-actions">
+                    <button type="button" className="suggestion-dismiss">
+                      Maybe later
+                    </button>
+                    <button type="button" className="suggestion-action">
+                      {tip.action}
+                      <span aria-hidden="true">&rarr;</span>
+                    </button>
+                  </div>
+                </article>
+              ))}
             </div>
-
-            <div className="section-card sidebar-whisper">
-              <div className="chat-header">
-                <div>
-                  <strong>Drive Whisper</strong>
-                  <span>One-tap nudges</span>
-                </div>
-                <button type="button" className="ghost">
-                  Automations
-                </button>
-              </div>
-              <div className="suggestion-list roomy">
-                {whisperSuggestions[persona].map((tip) => (
-                  <article
-                    key={tip.message}
-                    className={`suggestion ${tip.tone}`}
-                    role="alert"
-                  >
-                    <div className="suggestion-header">
-                      <span className="suggestion-chip">Drive Whisper</span>
-                      <span className="suggestion-time">{tip.time}</span>
-                    </div>
-                    <div className="suggestion-body">
-                      <div className="suggestion-icon" aria-hidden="true">
-                        {tip.tone === "alert"
-                          ? "⚠️"
-                          : tip.tone === "plan"
-                          ? "✨"
-                          : "🔔"}
-                      </div>
-                      <div className="suggestion-content">
-                        <p className="suggestion-message">{tip.message}</p>
-                      </div>
-                    </div>
-                    <div className="suggestion-actions">
-                      <button type="button" className="suggestion-dismiss">
-                        Maybe later
-                      </button>
-                      <button type="button" className="suggestion-action">
-                        {tip.action}
-                        <span aria-hidden="true">&rarr;</span>
-                      </button>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </aside>
-        )}
+          </div>
+        </aside>
       </div>
 
       <nav className={`tour-nav ${tourCollapsed ? "collapsed" : ""}`}>
@@ -1873,86 +2196,13 @@ function App() {
         )}
       </nav>
 
-      <button
-        type="button"
-        className="floating-chat"
-        onClick={() => setGlobalChatOpen(true)}
-      >
+      <Link className="floating-chat" to="/companion">
         💬 <span>Chat with Companion</span>
-      </button>
-
-      {globalChatOpen && (
-        <div className="global-chat-overlay">
-          <div className="global-chat-panel">
-            <div className="panel-head">
-              <div>
-                <span className="badge soft">Always-on agent</span>
-                <h3>Ask Companion anything</h3>
-                <p>Connected to Drive + Calendar + Gmail</p>
-              </div>
-              <button
-                type="button"
-                className="ghost"
-                onClick={() => setGlobalChatOpen(false)}
-              >
-                Close
-              </button>
-            </div>
-            <div className="global-chat-feed">
-              {globalChatLog.map((entry, index) => (
-                <div
-                  key={`global-${entry.role}-${index}`}
-                  className={`chat-bubble ${entry.role}`}
-                >
-                  {entry.text}
-                </div>
-              ))}
-            </div>
-            <form
-              className="global-chat-form"
-              onSubmit={handleGlobalPromptSubmit}
-            >
-              <input
-                value={globalPrompt}
-                onChange={(event) => setGlobalPrompt(event.target.value)}
-                placeholder="e.g. Draft a recap email for today’s vendor report"
-              />
-              <button type="submit">Send</button>
-            </form>
-          </div>
-        </div>
-      )}
+      </Link>
 
       {docCanvasOpen && (
         <div className="doc-overlay">
           <div className="doc-modal">{renderDocumentCanvas()}</div>
-        </div>
-      )}
-
-      {companionExpanded && (
-        <div className="companion-overlay">
-          <div className="companion-canvas">
-            <div className="canvas-head">
-              <div>
-                <h3>Companion Canvas</h3>
-                <p>
-                  Full-screen agent view — ask anything about{" "}
-                  {selectedFile?.name} or orchestrate actions across Drive,
-                  Calendar, and Gmail.
-                </p>
-              </div>
-              <button
-                className="ghost"
-                onClick={() => setCompanionExpanded(false)}
-              >
-                Close
-              </button>
-            </div>
-            <div className="canvas-grid">
-              <div className="canvas-column">{renderCompanionScenario()}</div>
-              <div className="canvas-column">{companionChat}</div>
-            </div>
-          </div>
         </div>
       )}
 
@@ -1971,6 +2221,634 @@ function App() {
       )}
     </div>
   );
+
+  const heroStats = [
+    {
+      label: personaConfig[persona].title,
+      value: personaConfig[persona].narrative,
+      helper: "Drive Companion keeps this workspace hot.",
+    },
+    {
+      label: selectedFile ? selectedFile.name : "Recent Drive files",
+      value: selectedFile ? selectedFile.status : "Pick any file to spotlight.",
+      helper: selectedFile ? selectedFile.meta : personaConfig[persona].status,
+    },
+    {
+      label: personaConfig[persona].folder,
+      value: personaConfig[persona].status,
+      helper: "Synced to Calendar, Gmail, and Drive.",
+    },
+  ];
+  const quickLinks = filesForPersona.slice(0, 3);
+  const suggestionFeed = whisperSuggestions[persona];
+
+  const docsDemo = <DocsDemo files={driveFiles.student} />;
+  const opsDemo = <OpsDemo files={driveFiles.professional} />;
+  const companionPage = (
+    <div className="companion-page">
+      <section className="companion-hero">
+        <div className="companion-hero-content">
+          <div>
+            <span className="badge soft">Central companion</span>
+            <h1>Drive Companion Control Room</h1>
+            <p>
+              LLM-style threads with direct access to Docs, Sheets, Slides,
+              Calendar, and Gmail.
+            </p>
+            <div className="companion-hero-chips">
+              {personaConfig[persona].chips.map((chip) => (
+                <span key={chip}>{chip}</span>
+              ))}
+            </div>
+          </div>
+          <Link className="ghost subtle" to="/">
+            ← Back to dashboard
+          </Link>
+        </div>
+        <div className="companion-hero-stats">
+          {heroStats.map((stat) => (
+            <article key={stat.label} className="companion-stat-card">
+              <span>{stat.label}</span>
+              <strong>{stat.value}</strong>
+              <p>{stat.helper}</p>
+            </article>
+          ))}
+        </div>
+        <div className="persona-tabs hero-tabs">
+          <button
+            className={persona === "student" ? "active" : ""}
+            onClick={() => setPersona("student")}
+          >
+            🎓 Student workspace
+          </button>
+          <button
+            className={persona === "professional" ? "active" : ""}
+            onClick={() => setPersona("professional")}
+          >
+            💼 Professional workspace
+          </button>
+        </div>
+      </section>
+      <div className="companion-meta-row">
+        <div className="companion-meta">
+          <span>Folder: {personaConfig[persona].folder}</span>
+          <span>
+            Focus: {selectedFile ? selectedFile.name : "Recent Drive files"}
+          </span>
+        </div>
+        <span className="companion-meta-status">
+          {personaConfig[persona].status}
+        </span>
+      </div>
+      <div className="companion-main-grid">
+        <section className="companion-chat-panel hero-panel">
+          <div className="companion-chat-head">
+            <div>
+              <h4>Drive Companion Chat</h4>
+              <p>LLM + Drive context in one canvas.</p>
+            </div>
+            <span>{filesForPersona.length} linked files</span>
+          </div>
+          <div className="chat-meta">
+            <span>Folder: {personaConfig[persona].folder}</span>
+            <span>
+              Focus: {selectedFile ? selectedFile.name : "Recent Drive files"}
+            </span>
+          </div>
+          <div className="chat-stack large">
+            <div className="chat-feed">
+              {globalChatHistory[persona].map((entry, index) => (
+                <div
+                  key={`central-${entry.role}-${index}`}
+                  className={`chat-bubble ${entry.role}`}
+                >
+                  <span>{entry.text}</span>
+                  {entry.linkTo && (
+                    <Link className="chat-link" to={entry.linkTo}>
+                      {entry.linkLabel ?? "Open"}
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
+            <form className="chat-form" onSubmit={handleGlobalPromptSubmit}>
+              <input
+                value={globalPrompt}
+                onChange={(event) => setGlobalPrompt(event.target.value)}
+                placeholder="“Prep Slides talking points for vendor KPIs…”"
+              />
+              <button type="submit">Send</button>
+            </form>
+          </div>
+          <div className="chat-shortcuts">
+            {cannedGlobalResponses
+              .filter((entry) => !entry.persona || entry.persona === persona)
+              .slice(0, 4)
+              .map((entry) => (
+                <button
+                  key={entry.text}
+                  className="chat-chip"
+                  onClick={() => handleCannedGlobalPrompt(entry.triggers[0])}
+                >
+                  {entry.linkLabel ?? entry.triggers[0]}
+                </button>
+              ))}
+          </div>
+        </section>
+        <div className="companion-intel-stack">
+          <div className="companion-intel-card">
+            <div className="companion-intel-head">
+              <div>
+                <h4>Current file</h4>
+                <p>{selectedFile?.status}</p>
+              </div>
+              <span
+                className={`file-app-badge ${
+                  selectedFile?.app?.toLowerCase() ?? "docs"
+                }`}
+              >
+                {selectedFile?.app ?? "Docs"}
+              </span>
+            </div>
+            <h3>{selectedFile?.name}</h3>
+            <p>{selectedFile?.description}</p>
+            <div className="companion-intel-meta">
+              <span>{selectedFile?.folder}</span>
+              <span>{selectedFile?.meta}</span>
+            </div>
+            <div className="companion-intel-actions">
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => setDocCanvasOpen(true)}
+              >
+                Open annotations
+              </button>
+              <Link
+                className="text-link"
+                to={
+                  selectedFile
+                    ? `/doc/${selectedFile.id}`
+                    : `/${persona === "student" ? "docs-demo" : "ops-demo"}`
+                }
+              >
+                View doc →
+              </Link>
+            </div>
+          </div>
+          <div className="companion-intel-card">
+            <div className="companion-intel-head">
+              <div>
+                <h4>Quick switches</h4>
+                <p>Jump between docs without leaving chat.</p>
+              </div>
+              <span className="companion-meta-status subtle">
+                {filesForPersona.length} files
+              </span>
+            </div>
+            <ul className="companion-quick-switches">
+              {filesForPersona.slice(0, 5).map((file) => (
+                <li key={`side-${file.id}`}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedFileId(file.id);
+                      setDocCanvasOpen(false);
+                    }}
+                  >
+                    {file.icon} {file.name}
+                  </button>
+                  <span>{file.status}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="companion-intel-card companion-suggestions">
+            <div className="companion-intel-head">
+              <div>
+                <h4>Drive Whisper</h4>
+                <p>Live nudges from Companion.</p>
+              </div>
+            </div>
+            <div className="suggestion-list roomy">
+              {suggestionFeed.map((tip) => (
+                <article
+                  key={`companion-suggestion-${tip.message}`}
+                  className={`suggestion ${tip.tone}`}
+                >
+                  <div className="suggestion-header">
+                    <span className="suggestion-chip">Drive Whisper</span>
+                    <span className="suggestion-time">{tip.time}</span>
+                  </div>
+                  <div className="suggestion-body">
+                    <div className="suggestion-icon" aria-hidden="true">
+                      {tip.tone === "alert"
+                        ? "⚠️"
+                        : tip.tone === "plan"
+                        ? "✨"
+                        : "🔔"}
+                    </div>
+                    <div className="suggestion-content">
+                      <p className="suggestion-message">{tip.message}</p>
+                    </div>
+                  </div>
+                  <div className="suggestion-actions">
+                    <button type="button" className="suggestion-dismiss">
+                      Maybe later
+                    </button>
+                    <button type="button" className="suggestion-action">
+                      {tip.action}
+                      <span aria-hidden="true">&rarr;</span>
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <section className="companion-files-row">
+        <div className="companion-files-head">
+          <div>
+            <h4>Files in focus</h4>
+            <p>Companion can jump into these docs instantly.</p>
+          </div>
+          <Link className="ghost" to="/">
+            Back to dashboard
+          </Link>
+        </div>
+        <div className="companion-files-grid">
+          {quickLinks.map((file) => (
+            <article key={`quick-${file.id}`} className="companion-file-card">
+              <div className="companion-file-head">
+                <div>
+                  <span className={`file-app-badge ${file.app.toLowerCase()}`}>
+                    {file.app}
+                  </span>
+                  <strong>{file.name}</strong>
+                </div>
+                <button
+                  type="button"
+                  className="ghost subtle"
+                  onClick={() => {
+                    setSelectedFileId(file.id);
+                    setDocCanvasOpen(false);
+                  }}
+                >
+                  Focus
+                </button>
+              </div>
+              <p>{file.description}</p>
+              <div className="companion-file-meta">
+                <span>{file.folder}</span>
+                <span>{file.owner}</span>
+                <span>{file.modified}</span>
+              </div>
+              <div className="companion-file-actions">
+                <Link className="text-link" to={`/doc/${file.id}`}>
+                  Open doc →
+                </Link>
+                <span>{file.status}</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+
+  return (
+    <div className={`page-transition ${transitionStage}`}>
+      <Routes location={displayLocation}>
+        <Route path="/" element={dashboardPage} />
+        <Route path="/docs-demo" element={docsDemo} />
+        <Route path="/ops-demo" element={opsDemo} />
+        <Route path="/doc/:fileId" element={<FileDocPage />} />
+        <Route path="/companion" element={companionPage} />
+      </Routes>
+    </div>
+  );
 }
 
 export default App;
+
+type DocsDemoProps = {
+  files: DriveFile[];
+};
+
+const DocsDemo = ({ files }: DocsDemoProps) => (
+  <div className="demo-page">
+    <h1>Docs + Slides Workflow</h1>
+    <p>
+      Show how Drive Companion turns Docs into Slides briefs, Sheets trackers,
+      and Calendar-ready plans.
+    </p>
+    <div className="demo-card-grid">
+      {files.slice(0, 3).map((file) => (
+        <div key={file.id} className="demo-card">
+          <div className="demo-card-head">
+            <span className="demo-app">{file.app}</span>
+            <strong>{file.name}</strong>
+          </div>
+          <small>{file.description}</small>
+        </div>
+      ))}
+    </div>
+    <Link className="ghost" to="/">
+      ← Back to dashboard
+    </Link>
+  </div>
+);
+
+const OpsDemo = ({ files }: DocsDemoProps) => (
+  <div className="demo-page">
+    <h1>Ops & Vendor Demo</h1>
+    <p>
+      Walk through how Slides decks, Docs notes, and Sheets KPIs stay
+      orchestrated across Gmail and Calendar.
+    </p>
+    <div className="demo-card-grid">
+      {files.slice(0, 3).map((file) => (
+        <div key={file.id} className="demo-card">
+          <div className="demo-card-head">
+            <span className="demo-app">{file.app}</span>
+            <strong>{file.name}</strong>
+          </div>
+          <small>{file.description}</small>
+        </div>
+      ))}
+    </div>
+    <Link className="ghost" to="/">
+      ← Back to dashboard
+    </Link>
+  </div>
+);
+
+const FileDocPage = () => {
+  const { fileId } = useParams();
+  const file = findDriveFile(fileId);
+  const doc = documentCanvases[fileId || ""];
+  const filePersona: Persona = driveFiles.student.some(
+    (item) => item.id === file?.id
+  )
+    ? "student"
+    : "professional";
+  const [chatDocked, setChatDocked] = useState(true);
+  const docChatSamples: ChatEntry[] =
+    filePersona === "student"
+      ? [
+          {
+            role: "agent",
+            text: "🔍 Highlighted the risk paragraph and drafted mitigation notes for your study pack.",
+            linkLabel: "Open highlight",
+            linkTo: `/doc/${fileId}#risk`,
+          },
+          {
+            role: "user",
+            text: "Can you summarize the next section for Sheets?",
+          },
+          {
+            role: "agent",
+            text: "Summary ready. Want me to push it to Sheets or prep Slides talking points?",
+          },
+        ]
+      : [
+          {
+            role: "agent",
+            text: "📊 Pulled KPIs + flagged the onboarding risk in this doc. Ready to slot into Slides?",
+            linkLabel: "View KPI callout",
+            linkTo: `/doc/${fileId}#kpi`,
+          },
+          {
+            role: "user",
+            text: "Draft an exec recap snippet.",
+          },
+          {
+            role: "agent",
+            text: "Snippet is ready. I can drop it into Gmail or append it to Slides — just say the word.",
+          },
+        ];
+
+  if (!file) {
+    return (
+      <div className="demo-page">
+        <h1>File not found</h1>
+        <p>This demo file doesn’t exist yet.</p>
+        <Link className="ghost" to="/">
+          ← Back to dashboard
+        </Link>
+      </div>
+    );
+  }
+  return (
+    <div className="demo-page doc-view">
+      <div className="doc-view-head">
+        <div className="doc-head-left">
+          <div className="doc-head-icon" aria-hidden="true">
+            {file.icon}
+          </div>
+          <div>
+            <span className="doc-head-app">{file.app}</span>
+            <h1>{file.name}</h1>
+            <p>{file.description}</p>
+          </div>
+        </div>
+        <div className="doc-head-actions">
+          <button type="button" className="ghost">
+            Share
+          </button>
+          <button type="button" className="primary">
+            Export PDF
+          </button>
+          <Link className="ghost subtle" to="/companion">
+            ← Back to companion
+          </Link>
+          <Link className="ghost subtle" to="/">
+            ← Back to dashboard
+          </Link>
+        </div>
+      </div>
+      <div className="doc-view-meta">
+        <span>{file.type}</span>
+        <span>{file.meta}</span>
+        <span>{file.status}</span>
+        <span>Folder: {file.folder}</span>
+      </div>
+      {doc ? (
+        <>
+          <div className="doc-insights-rail">
+            {doc.sections.slice(0, 3).map((section) => (
+              <article
+                key={`insight-${section.id}`}
+                className="doc-insight-card"
+              >
+                <small>{section.heading}</small>
+                <strong>{section.insight}</strong>
+                <p>{section.action}</p>
+              </article>
+            ))}
+            <article className="doc-insight-card tips-card">
+              <small>Inline automations</small>
+              <ul>
+                {doc.inlineTips.slice(0, 3).map((tip, index) => (
+                  <li key={`tip-pill-${index}`}>{tip}</li>
+                ))}
+              </ul>
+            </article>
+          </div>
+          <div className="doc-stage-grid">
+            <div className="doc-page-shell">
+              <div
+                className="doc-page-scroll"
+                role="region"
+                aria-label="Google Doc preview"
+              >
+                <div className="doc-page-surface">
+                  <header className="doc-page-header">
+                    <div>
+                      <h3>{doc.title}</h3>
+                      <p>{doc.subtitle}</p>
+                    </div>
+                    <span className="doc-page-status">{doc.status}</span>
+                  </header>
+                  {doc.sections.map((section, index) => (
+                    <article
+                      key={`page-${section.id}`}
+                      id={section.id}
+                      className="doc-page-section"
+                    >
+                      <div className="doc-section-head">
+                        <span className="doc-section-pill">
+                          Section {index + 1}
+                        </span>
+                        <h4>{section.heading}</h4>
+                      </div>
+                      <p>{section.excerpt}</p>
+                      <div className="doc-inline-callout">
+                        <span className="doc-inline-chip">AI annotation</span>
+                        <strong>{section.insight}</strong>
+                        <p>{section.action}</p>
+                        <div className="doc-inline-actions">
+                          <button type="button" className="primary">
+                            Apply note
+                          </button>
+                          <button type="button" className="ghost">
+                            Ask follow-up
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                  <footer className="doc-page-footnotes">
+                    <h5>Tips from Companion</h5>
+                    <ul>
+                      {doc.inlineTips.map((tip, index) => (
+                        <li key={`footnote-${index}`}>{tip}</li>
+                      ))}
+                    </ul>
+                  </footer>
+                </div>
+              </div>
+            </div>
+            <aside
+              className={`doc-chat-card ${chatDocked ? "open" : "collapsed"}`}
+            >
+              <div className="doc-chat-card-head">
+                <div>
+                  <strong>Drive Companion</strong>
+                  <span>Linked to {file.folder}</span>
+                </div>
+                <button
+                  className="ghost subtle"
+                  onClick={() => setChatDocked((prev) => !prev)}
+                >
+                  {chatDocked ? "Hide" : "Show"}
+                </button>
+              </div>
+              {chatDocked ? (
+                <>
+                  <div className="chat-feed">
+                    {docChatSamples.map((entry, index) => (
+                      <div
+                        key={`doc-chat-${entry.role}-${index}`}
+                        className={`chat-bubble ${entry.role}`}
+                      >
+                        <span>{entry.text}</span>
+                        {entry.linkTo && (
+                          <Link className="chat-link" to={entry.linkTo}>
+                            {entry.linkLabel ?? "Open"}
+                          </Link>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <form
+                    className="chat-form"
+                    onSubmit={(event) => event.preventDefault()}
+                  >
+                    <input placeholder="Ask Companion to annotate, summarize…" />
+                    <button type="button">Send</button>
+                  </form>
+                </>
+              ) : (
+                <p className="doc-chat-hint">
+                  Companion chat is docked. Tap show to reopen.
+                </p>
+              )}
+            </aside>
+          </div>
+          <div className="doc-automation-board">
+            <section className="doc-automation-section">
+              <div className="doc-automation-head">
+                <div>
+                  <h4>AI highlights</h4>
+                  <p>
+                    Companion pinned the most important paragraphs in this doc.
+                  </p>
+                </div>
+                <span className="doc-automation-count">
+                  {doc.sections.length} callouts
+                </span>
+              </div>
+              <div className="doc-highlight-grid">
+                {doc.sections.map((section) => (
+                  <article
+                    key={`highlight-${section.id}`}
+                    className="doc-highlight-item"
+                  >
+                    <span className="doc-highlight-label">
+                      {section.heading}
+                    </span>
+                    <p>{section.excerpt}</p>
+                    <div className="doc-highlight-note">
+                      <strong>{section.insight}</strong>
+                      <small>{section.action}</small>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+            <section className="doc-automation-section">
+              <div className="doc-automation-head">
+                <div>
+                  <h4>Inline automations</h4>
+                  <p>Actions Companion can run without leaving the doc.</p>
+                </div>
+              </div>
+              <ul className="doc-automation-list">
+                {doc.inlineTips.map((tip, index) => (
+                  <li key={`automation-${index}`}>
+                    <span className="doc-automation-number">{index + 1}</span>
+                    <p>{tip}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
+        </>
+      ) : (
+        <p>This file doesn’t have a full document canvas yet.</p>
+      )}
+    </div>
+  );
+};
