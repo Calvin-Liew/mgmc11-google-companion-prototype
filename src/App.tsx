@@ -1,5 +1,12 @@
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { Link, Route, Routes, useLocation, useParams } from "react-router-dom";
+import {
+  Link,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import "./App.css";
 
 type Persona = "student" | "professional";
@@ -20,6 +27,7 @@ type DriveFile = {
   tag: string;
   description: string;
   status: string;
+  route: "/" | "/companion" | "/doc" | "/doc-preview";
 };
 
 type DemoStep = {
@@ -69,6 +77,17 @@ type CalendarEntry = {
   title: string;
   meta: string;
   status: string;
+  color: "blue" | "green" | "pink" | "orange";
+  location: string;
+  startMinutes: number;
+  endMinutes: number;
+};
+
+type CalendarDayPreviewProps = {
+  entries: CalendarEntry[];
+  startMinutes: number;
+  endMinutes: number;
+  size?: "small" | "large";
 };
 type UseCaseCard = {
   id: string;
@@ -79,6 +98,7 @@ type UseCaseCard = {
   persona: Persona;
   fileId: string;
   demoStepId: string;
+  route: "/" | "/companion" | "/doc" | "/doc-preview";
 };
 
 type ChatPromptChip = {
@@ -152,6 +172,7 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       tag: "Outline",
       description: "Course outcomes, deliverables, and grading breakdown.",
       status: "Syllabus-to-Schedule Pack ready",
+      route: "/",
     },
     {
       id: "reading",
@@ -167,6 +188,7 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       tag: "Reading pack",
       description: "Condensed into a summary, slides, and flashcards.",
       status: "Smart Reading Pack generated",
+      route: "/doc",
     },
     {
       id: "notes",
@@ -182,6 +204,7 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       tag: "Notes",
       description: "Companion mapped every concept across readings.",
       status: "Living concept map updated",
+      route: "/doc",
     },
     {
       id: "exam",
@@ -197,6 +220,7 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       tag: "Prep plan",
       description: "Exam windows, weightings, and suggested study cadence.",
       status: "Deadline-aware exam prep",
+      route: "/doc",
     },
   ],
   professional: [
@@ -214,6 +238,7 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       tag: "Meetings",
       description: "Summary, decisions, and action items already drafted.",
       status: "AI Meeting Chief of Staff",
+      route: "/doc",
     },
     {
       id: "vendor",
@@ -229,6 +254,7 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       tag: "Reporting",
       description: "Executive brief + risk alerts generated instantly.",
       status: "Executive brief ready",
+      route: "/companion",
     },
     {
       id: "calendar",
@@ -244,6 +270,7 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       tag: "Rhythm",
       description: "Calendar density, focus time, and commute blocks.",
       status: "Work Rhythm Optimiser",
+      route: "/doc",
     },
   ],
 };
@@ -255,6 +282,25 @@ const allDriveFiles: DriveFile[] = [
 
 const findDriveFile = (fileId?: string) =>
   allDriveFiles.find((file) => file.id === fileId);
+
+const getRouteForFile = (fileId?: string) => {
+  const file = findDriveFile(fileId);
+  if (!file) return "/";
+  if (file.id === "calendar") return "/doc/calendar";
+  if (!file.route || file.route === "/doc") {
+    return `/doc/${file.id}`;
+  }
+  return file.route;
+};
+
+const getAppLaunchLabel = (file?: DriveFile) => {
+  if (!file) return "Open file";
+  if (file.id === "calendar") return "Open Calendar";
+  if (file.app === "Docs") return "Open in Docs";
+  if (file.app === "Sheets") return "Open in Sheets";
+  if (file.app === "Slides") return "Open in Slides";
+  return "Open file";
+};
 
 const fileHighlights: Record<string, string[]> = {
   syllabus: [
@@ -491,6 +537,7 @@ const useCaseHighlights: UseCaseCard[] = [
     persona: "student",
     fileId: "syllabus",
     demoStepId: "student-syllabus",
+    route: "/",
   },
   {
     id: "usecase-reading",
@@ -501,6 +548,7 @@ const useCaseHighlights: UseCaseCard[] = [
     persona: "student",
     fileId: "reading",
     demoStepId: "student-reading",
+    route: "/doc",
   },
   {
     id: "usecase-notes",
@@ -511,6 +559,7 @@ const useCaseHighlights: UseCaseCard[] = [
     persona: "student",
     fileId: "notes",
     demoStepId: "student-notes",
+    route: "/doc",
   },
   {
     id: "usecase-meeting",
@@ -521,6 +570,7 @@ const useCaseHighlights: UseCaseCard[] = [
     persona: "professional",
     fileId: "meeting",
     demoStepId: "pro-meeting",
+    route: "/doc",
   },
   {
     id: "usecase-vendor",
@@ -531,6 +581,7 @@ const useCaseHighlights: UseCaseCard[] = [
     persona: "professional",
     fileId: "vendor",
     demoStepId: "pro-vendor",
+    route: "/companion",
   },
   {
     id: "usecase-calendar",
@@ -541,6 +592,7 @@ const useCaseHighlights: UseCaseCard[] = [
     persona: "professional",
     fileId: "calendar",
     demoStepId: "pro-proactive",
+    route: "/doc",
   },
 ];
 
@@ -608,6 +660,10 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
       title: "Week 3 Reading Sprint",
       meta: "Slides + flashcards auto-prepped",
       status: "Focus block",
+      color: "blue",
+      location: "Library · Quiet room",
+      startMinutes: 15 * 60,
+      endMinutes: 16 * 60,
     },
     {
       id: "cal-2",
@@ -616,6 +672,10 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
       title: "Lab 02 reflection",
       meta: "Companion added checklist",
       status: "Auto reminder",
+      color: "pink",
+      location: "Engineering Lab",
+      startMinutes: 9 * 60 + 30,
+      endMinutes: 10 * 60 + 15,
     },
     {
       id: "cal-3",
@@ -624,6 +684,10 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
       title: "Midterm cadence review",
       meta: "Risk detection on track",
       status: "Calendar hold",
+      color: "green",
+      location: "Zoom · link ready",
+      startMinutes: 13 * 60,
+      endMinutes: 14 * 60,
     },
   ],
   professional: [
@@ -634,6 +698,10 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
       title: "CX Weekly Sync",
       meta: "Recap + actions drafted",
       status: "Summary ready",
+      color: "blue",
+      location: "Meet · Conf Room C",
+      startMinutes: 11 * 60,
+      endMinutes: 11 * 60 + 45,
     },
     {
       id: "cal-5",
@@ -642,6 +710,10 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
       title: "Vendor risk briefing",
       meta: "Exec brief queued",
       status: "Prep now",
+      color: "orange",
+      location: "Hangouts · Vendor Ops",
+      startMinutes: 14 * 60 + 30,
+      endMinutes: 15 * 60,
     },
     {
       id: "cal-6",
@@ -650,6 +722,10 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
       title: "Focus block",
       meta: "Companion protected time",
       status: "Focus block",
+      color: "green",
+      location: "Calendar hold",
+      startMinutes: 16 * 60,
+      endMinutes: 17 * 60,
     },
   ],
 };
@@ -955,17 +1031,21 @@ function App() {
   const tourTrackRef = useRef<HTMLDivElement>(null);
   const [tourCollapsed, setTourCollapsed] = useState(false);
   const [pendingFileId, setPendingFileId] = useState<string | null>(null);
+  const [tourActive, setTourActive] = useState(false);
+  const [tourStepIndex, setTourStepIndex] = useState(0);
   const location = useLocation();
+  const navigate = useNavigate();
   const [displayLocation, setDisplayLocation] = useState(location);
   const [transitionStage, setTransitionStage] = useState<
     "fade-in" | "fade-out"
   >("fade-in");
 
   useEffect(() => {
+    if (pendingFileId) return;
     const first = driveFiles[persona][0];
     setSelectedFileId(first.id);
     setDocCanvasOpen(false);
-  }, [persona]);
+  }, [persona, pendingFileId]);
 
   const filesForPersona = driveFiles[persona];
   const selectedFile = useMemo(
@@ -975,6 +1055,10 @@ function App() {
     [filesForPersona, selectedFileId]
   );
   const calendarFeed = calendarEntries[persona];
+  const quickLinks = filesForPersona.slice(0, 3);
+  const suggestionFeed = whisperSuggestions[persona];
+  const calendarDayStart = persona === "student" ? 8 * 60 : 7 * 60;
+  const calendarDayEnd = persona === "student" ? 22 * 60 : 20 * 60;
 
   useEffect(() => {
     if (!selectedFile) return;
@@ -991,12 +1075,13 @@ function App() {
   }, [selectedFile, persona]);
 
   useEffect(() => {
-    if (pendingFileId) {
-      setSelectedFileId(pendingFileId);
+    if (!pendingFileId) return;
+    setSelectedFileId(pendingFileId);
+    if (!tourActive) {
       setDocCanvasOpen(false);
-      setPendingFileId(null);
     }
-  }, [pendingFileId, persona]);
+    setPendingFileId(null);
+  }, [pendingFileId, persona, tourActive]);
 
   useEffect(() => {
     if (location !== displayLocation) {
@@ -1014,14 +1099,235 @@ function App() {
     }
   }, [transitionStage, location]);
 
-  const currentStep = demoSteps.find(
+  const activeDemoStep = demoSteps.find(
     (step) => step.persona === persona && step.fileId === selectedFile?.id
   );
+  const totalTourSteps = demoSteps.length;
+  const currentTourStep = tourActive ? demoSteps[tourStepIndex] : undefined;
 
   const handleUseCaseClick = (card: UseCaseCard) => {
+    setTourActive(false);
+    setTourStepIndex(0);
     setPersona(card.persona);
     setSelectedFileId(card.fileId);
     setDocCanvasOpen(false);
+    navigate(getRouteForFile(card.fileId));
+  };
+
+  const goToTourStep = (
+    index: number,
+    options?: {
+      skipScroll?: boolean;
+    }
+  ) => {
+    const nextIndex = Math.min(Math.max(index, 0), totalTourSteps - 1);
+    setTourStepIndex(nextIndex);
+    const step = demoSteps[nextIndex];
+    setPendingFileId(step.fileId);
+    setPersona(step.persona);
+    setDocCanvasOpen(false);
+    navigate(getRouteForFile(step.fileId));
+    if (!options?.skipScroll && tourTrackRef.current) {
+      const target = tourTrackRef.current.children[nextIndex] as
+        | HTMLElement
+        | undefined;
+      target?.scrollIntoView({ behavior: "smooth", inline: "center" });
+    }
+  };
+
+  const startTour = () => {
+    setTourCollapsed(false);
+    setTourActive(true);
+    goToTourStep(0, { skipScroll: true });
+  };
+
+  const exitTour = () => {
+    setTourActive(false);
+    setTourStepIndex(0);
+  };
+
+  const handleTourNext = () => {
+    if (tourStepIndex >= totalTourSteps - 1) {
+      exitTour();
+      return;
+    }
+    goToTourStep(tourStepIndex + 1);
+  };
+
+  const handleTourPrev = () => {
+    if (tourStepIndex === 0) return;
+    goToTourStep(tourStepIndex - 1);
+  };
+
+  const openTourScenario = () => {
+    if (!currentTourStep) return;
+    setDocCanvasOpen(false);
+    navigate(getRouteForFile(currentTourStep.fileId));
+  };
+
+  const focusTourStep = (index: number, step: DemoStep) => {
+    if (tourActive) {
+      goToTourStep(index);
+    } else {
+      setPersona(step.persona);
+      setSelectedFileId(step.fileId);
+      setDocCanvasOpen(false);
+    }
+  };
+
+  const renderTourCarousel = () => (
+    <div className="tour-carousel">
+      <div className="tour-steps" ref={tourTrackRef}>
+        {demoSteps.map((step, index) => {
+          const isActive = activeDemoStep?.id === step.id;
+          const isStudent = step.persona === "student";
+          const previewRoute = getRouteForFile(step.fileId);
+          return (
+            <Link
+              key={step.id}
+              className={`tour-card ${isActive ? "active" : ""} ${
+                isStudent ? "student" : "pro"
+              }`}
+              to={previewRoute}
+              onClick={() => focusTourStep(index, step)}
+            >
+              <div className="tour-card-top">
+                <div className="tour-pill">
+                  {isStudent ? "🎓 Student" : "💼 Professional"}
+                </div>
+                <strong>{step.title}</strong>
+                <p className="tour-subtitle">{step.subtitle}</p>
+              </div>
+              <div className="tour-card-body">
+                {step.highlights.map((point) => (
+                  <div key={point} className="tour-chip">
+                    {point}
+                  </div>
+                ))}
+              </div>
+              <span className="tour-cta">{step.action}</span>
+            </Link>
+          );
+        })}
+      </div>
+      <div className="tour-fade left" aria-hidden="true" />
+      <div className="tour-fade right" aria-hidden="true" />
+    </div>
+  );
+  const shouldShowTourNav = tourActive || location.pathname === "/";
+  const renderTourNav = () => {
+    if (!shouldShowTourNav) return null;
+    return (
+      <nav
+        className={`tour-nav ${tourCollapsed ? "collapsed" : ""} ${
+          tourActive ? "active" : ""
+        }`}
+      >
+        <div className="tour-heading">
+          <div className="tour-meta">
+            <strong>Companion tour</strong>
+            <span>
+              Swipe through the signature student + professional MVP moments.
+            </span>
+          </div>
+          <div className="tour-controls">
+            <span className="tour-hint">Scroll to preview each demo</span>
+            <div className="tour-buttons">
+              <button
+                type="button"
+                aria-label="Scroll tour left"
+                onClick={() => scrollTour("left")}
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                aria-label="Scroll tour right"
+                onClick={() => scrollTour("right")}
+              >
+                →
+              </button>
+            </div>
+            {!tourActive && (
+              <button
+                type="button"
+                className="tour-toggle"
+                onClick={() => setTourCollapsed((prev) => !prev)}
+              >
+                {tourCollapsed ? "Open" : "Hide"}
+              </button>
+            )}
+          </div>
+        </div>
+        {tourActive && currentTourStep ? (
+          <>
+            <div className="tour-guided">
+              <div className="tour-guided-info">
+                <span>
+                  Step {tourStepIndex + 1} of {totalTourSteps}
+                </span>
+                <strong>{currentTourStep.title}</strong>
+                <p>{currentTourStep.subtitle}</p>
+                <div className="tour-guided-points">
+                  {currentTourStep.highlights.map((point) => (
+                    <span key={`guided-${point}`}>{point}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="tour-guided-actions">
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={handleTourPrev}
+                  disabled={tourStepIndex === 0}
+                >
+                  ← Previous
+                </button>
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={openTourScenario}
+                >
+                  Open scenario
+                </button>
+                <button
+                  type="button"
+                  className="primary"
+                  onClick={handleTourNext}
+                >
+                  {tourStepIndex === totalTourSteps - 1
+                    ? "Finish tour"
+                    : "Next scenario →"}
+                </button>
+                <button type="button" className="link" onClick={exitTour}>
+                  Exit tour
+                </button>
+              </div>
+            </div>
+            {renderTourCarousel()}
+          </>
+        ) : (
+          !tourCollapsed &&
+          location.pathname === "/" && (
+            <>
+              <div className="tour-optin">
+                <div>
+                  <strong>Ready for a walkthrough?</strong>
+                  <p>
+                    See how Companion handles syllabi, readings, meetings, and
+                    more in a guided sequence.
+                  </p>
+                </div>
+                <button type="button" className="primary" onClick={startTour}>
+                  Start guided tour
+                </button>
+              </div>
+              {renderTourCarousel()}
+            </>
+          )
+        )}
+      </nav>
+    );
   };
 
   const sendGlobalPrompt = (question: string) => {
@@ -1647,6 +1953,130 @@ function App() {
 
   const renderDocumentCanvas = () => {
     const doc = documentCanvases[selectedFile?.id || ""];
+    const personaCalendarEntries = calendarEntries[persona];
+    const appLaunchRoute = getRouteForFile(selectedFile?.id);
+    const appLaunchLabel = getAppLaunchLabel(selectedFile);
+    if (selectedFile?.id === "calendar" && doc) {
+      return (
+        <div className="doc-pane calendar-mode">
+          {tourActive && currentTourStep && (
+            <div className="tour-context-banner">
+              <div>
+                <span>
+                  Guided tour · Step {tourStepIndex + 1} of {totalTourSteps}
+                </span>
+                <strong>{currentTourStep.title}</strong>
+                <p>{currentTourStep.subtitle}</p>
+              </div>
+              <div className="tour-context-actions">
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={handleTourPrev}
+                  disabled={tourStepIndex === 0}
+                >
+                  ← Previous
+                </button>
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={openTourScenario}
+                >
+                  View full calendar
+                </button>
+                <button
+                  type="button"
+                  className="primary"
+                  onClick={handleTourNext}
+                >
+                  {tourStepIndex === totalTourSteps - 1
+                    ? "Finish tour"
+                    : "Next scenario →"}
+                </button>
+                <button type="button" className="link" onClick={exitTour}>
+                  Exit tour
+                </button>
+              </div>
+            </div>
+          )}
+          <div className="doc-toolbar">
+            <div className="doc-breadcrumb">
+              <button
+                className="ghost-icon"
+                onClick={() => setDocCanvasOpen(false)}
+              >
+                ←
+              </button>
+              <span>
+                My Drive / {personaConfig[persona].folder} /{" "}
+                {selectedFile?.name}
+              </span>
+            </div>
+          </div>
+          <div className="doc-head-actions">
+            <div className="doc-head-actions-left">
+              <Link className="ghost subtle" to="/">
+                ← Dashboard
+              </Link>
+              <Link className="ghost subtle" to="/companion">
+                Companion
+              </Link>
+            </div>
+            <div className="doc-head-actions-right">
+              <Link className="ghost app-launch" to={appLaunchRoute}>
+                {appLaunchLabel}
+              </Link>
+              <button type="button" className="ghost">
+                Share
+              </button>
+              <button type="button" className="primary">
+                Export PDF
+              </button>
+            </div>
+          </div>
+          <div className="doc-header">
+            <div>
+              <h2>{doc.title}</h2>
+              <p>{doc.subtitle}</p>
+            </div>
+            <div className="status-chip blue">{doc.status}</div>
+          </div>
+          <div className="calendar-mode-body">
+            <CalendarDayPreview
+              entries={personaCalendarEntries}
+              startMinutes={calendarDayStart}
+              endMinutes={calendarDayEnd}
+              size="large"
+            />
+            <div className="calendar-mode-sidebar">
+              <h5>Upcoming events</h5>
+              <ul>
+                {personaCalendarEntries.map((entry) => (
+                  <li key={`calendar-side-${entry.id}`}>
+                    <span className={`badge-dot ${entry.color}`} />
+                    <div>
+                      <strong>{entry.title}</strong>
+                      <small>{entry.time}</small>
+                      <span>{entry.location}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              {doc.inlineTips.length > 0 && (
+                <div className="inline-tips compact">
+                  <h5>Automations</h5>
+                  <ul>
+                    {doc.inlineTips.map((tip) => (
+                      <li key={`calendar-tip-${tip}`}>{tip}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
     if (!doc) {
       return (
         <div className="doc-pane empty">
@@ -1657,6 +2087,46 @@ function App() {
 
     return (
       <div className="doc-pane">
+        {tourActive && currentTourStep && (
+          <div className="tour-context-banner">
+            <div>
+              <span>
+                Guided tour · Step {tourStepIndex + 1} of {totalTourSteps}
+              </span>
+              <strong>{currentTourStep.title}</strong>
+              <p>{currentTourStep.subtitle}</p>
+            </div>
+            <div className="tour-context-actions">
+              <button
+                type="button"
+                className="ghost"
+                onClick={handleTourPrev}
+                disabled={tourStepIndex === 0}
+              >
+                ← Previous
+              </button>
+              <button
+                type="button"
+                className="ghost"
+                onClick={openTourScenario}
+              >
+                View full doc
+              </button>
+              <button
+                type="button"
+                className="primary"
+                onClick={handleTourNext}
+              >
+                {tourStepIndex === totalTourSteps - 1
+                  ? "Finish tour"
+                  : "Next scenario →"}
+              </button>
+              <button type="button" className="link" onClick={exitTour}>
+                Exit tour
+              </button>
+            </div>
+          </div>
+        )}
         <div className="doc-toolbar">
           <div className="doc-breadcrumb">
             <button
@@ -1669,11 +2139,26 @@ function App() {
               My Drive / {personaConfig[persona].folder} / {selectedFile?.name}
             </span>
           </div>
-          <div className="doc-actions">
-            <Link className="ghost" to="/companion">
-              Open Companion chat
+        </div>
+        <div className="doc-head-actions">
+          <div className="doc-head-actions-left">
+            <Link className="ghost subtle" to="/">
+              ← Dashboard
             </Link>
-            <button className="primary">Share</button>
+            <Link className="ghost subtle" to="/companion">
+              Companion
+            </Link>
+          </div>
+          <div className="doc-head-actions-right">
+            <Link className="ghost app-launch" to={appLaunchRoute}>
+              {appLaunchLabel}
+            </Link>
+            <button type="button" className="ghost">
+              Share
+            </button>
+            <button type="button" className="primary">
+              Export PDF
+            </button>
           </div>
         </div>
         <div className="doc-header">
@@ -2046,25 +2531,60 @@ function App() {
             <div className="panel-head">
               <div>
                 <h4>Calendar sync</h4>
-                <p>Today’s schedule at a glance.</p>
+                <p>
+                  Live Google Calendar preview — Companion keeps it in sync.
+                </p>
               </div>
               <button type="button" className="ghost">
                 Open Calendar
               </button>
             </div>
-            <div className="calendar-list compact">
-              {calendarFeed.map((entry) => (
-                <div key={entry.id} className="calendar-item">
-                  <div className="calendar-pill">
-                    <strong>{entry.day}</strong>
-                    <span>{entry.time}</span>
-                  </div>
-                  <div className="calendar-body">
-                    <h5>{entry.title}</h5>
-                    <p>{entry.meta}</p>
-                  </div>
+            <div className="calendar-preview">
+              <div className="calendar-preview-head">
+                <div>
+                  <span>Today · {calendarFeed[0]?.day ?? "Mon"}</span>
+                  <strong>
+                    {persona === "student"
+                      ? "Study + lab blocks already staged"
+                      : "Meetings + focus blocks kept balanced"}
+                  </strong>
                 </div>
-              ))}
+                <div className="calendar-preview-controls">
+                  <button
+                    type="button"
+                    className="ghost-icon small"
+                    aria-label="Previous day"
+                  >
+                    ←
+                  </button>
+                  <button
+                    type="button"
+                    className="ghost-icon small"
+                    aria-label="Next day"
+                  >
+                    →
+                  </button>
+                </div>
+              </div>
+              <div className="calendar-card-list">
+                {calendarFeed.map((entry) => (
+                  <article
+                    key={`card-${entry.id}`}
+                    className={`calendar-mini-card ${entry.color}`}
+                  >
+                    <div className="calendar-mini-content">
+                      <div className="calendar-mini-head">
+                        <span>{entry.time}</span>
+                        <button type="button" className="calendar-mini-chip">
+                          {entry.status}
+                        </button>
+                      </div>
+                      <strong>{entry.title}</strong>
+                      <small>{entry.location}</small>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -2117,7 +2637,11 @@ function App() {
         </aside>
       </div>
 
-      <nav className={`tour-nav ${tourCollapsed ? "collapsed" : ""}`}>
+      <nav
+        className={`tour-nav ${tourCollapsed ? "collapsed" : ""} ${
+          tourActive ? "active" : ""
+        }`}
+      >
         <div className="tour-heading">
           <div className="tour-meta">
             <strong>Companion tour</strong>
@@ -2143,56 +2667,82 @@ function App() {
                 →
               </button>
             </div>
-            <button
-              type="button"
-              className="tour-toggle"
-              onClick={() => setTourCollapsed((prev) => !prev)}
-            >
-              {tourCollapsed ? "Open" : "Hide"}
-            </button>
+            {!tourActive && (
+              <button
+                type="button"
+                className="tour-toggle"
+                onClick={() => setTourCollapsed((prev) => !prev)}
+              >
+                {tourCollapsed ? "Open" : "Hide"}
+              </button>
+            )}
           </div>
         </div>
-        {!tourCollapsed && (
-          <div className="tour-carousel">
-            <div className="tour-steps" ref={tourTrackRef}>
-              {demoSteps.map((step) => {
-                const isActive = currentStep?.id === step.id;
-                const isStudent = step.persona === "student";
-                return (
-                  <button
-                    key={step.id}
-                    type="button"
-                    className={`tour-card ${isActive ? "active" : ""} ${
-                      isStudent ? "student" : "pro"
-                    }`}
-                    onClick={() => {
-                      setPersona(step.persona);
-                      setSelectedFileId(step.fileId);
-                      setDocCanvasOpen(false);
-                    }}
-                  >
-                    <div className="tour-card-top">
-                      <div className="tour-pill">
-                        {isStudent ? "🎓 Student" : "💼 Professional"}
-                      </div>
-                      <strong>{step.title}</strong>
-                      <p className="tour-subtitle">{step.subtitle}</p>
-                    </div>
-                    <div className="tour-card-body">
-                      {step.highlights.map((point) => (
-                        <div key={point} className="tour-chip">
-                          {point}
-                        </div>
-                      ))}
-                    </div>
-                    <span className="tour-cta">{step.action}</span>
-                  </button>
-                );
-              })}
+        {tourActive && currentTourStep ? (
+          <>
+            <div className="tour-guided">
+              <div className="tour-guided-info">
+                <span>
+                  Step {tourStepIndex + 1} of {totalTourSteps}
+                </span>
+                <strong>{currentTourStep.title}</strong>
+                <p>{currentTourStep.subtitle}</p>
+                <div className="tour-guided-points">
+                  {currentTourStep.highlights.map((point) => (
+                    <span key={`guided-${point}`}>{point}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="tour-guided-actions">
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={handleTourPrev}
+                  disabled={tourStepIndex === 0}
+                >
+                  ← Previous
+                </button>
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={openTourScenario}
+                >
+                  Open scenario
+                </button>
+                <button
+                  type="button"
+                  className="primary"
+                  onClick={handleTourNext}
+                >
+                  {tourStepIndex === totalTourSteps - 1
+                    ? "Finish tour"
+                    : "Next scenario →"}
+                </button>
+                <button type="button" className="link" onClick={exitTour}>
+                  Exit tour
+                </button>
+              </div>
             </div>
-            <div className="tour-fade left" aria-hidden="true" />
-            <div className="tour-fade right" aria-hidden="true" />
-          </div>
+            {renderTourCarousel()}
+          </>
+        ) : (
+          !tourCollapsed && (
+            <>
+              <div className="tour-optin">
+                <div>
+                  <strong>Ready for a walkthrough?</strong>
+                  <p>
+                    See how Companion handles syllabi, readings, meetings, and
+                    more in a guided sequence.
+                  </p>
+                </div>
+                <button type="button" className="primary" onClick={startTour}>
+                  Start guided tour
+                </button>
+              </div>
+              {renderTourCarousel()}
+            </>
+          )
         )}
       </nav>
 
@@ -2239,9 +2789,6 @@ function App() {
       helper: "Synced to Calendar, Gmail, and Drive.",
     },
   ];
-  const quickLinks = filesForPersona.slice(0, 3);
-  const suggestionFeed = whisperSuggestions[persona];
-
   const docsDemo = <DocsDemo files={driveFiles.student} />;
   const opsDemo = <OpsDemo files={driveFiles.professional} />;
   const companionPage = (
@@ -2518,15 +3065,18 @@ function App() {
   );
 
   return (
-    <div className={`page-transition ${transitionStage}`}>
-      <Routes location={displayLocation}>
-        <Route path="/" element={dashboardPage} />
-        <Route path="/docs-demo" element={docsDemo} />
-        <Route path="/ops-demo" element={opsDemo} />
-        <Route path="/doc/:fileId" element={<FileDocPage />} />
-        <Route path="/companion" element={companionPage} />
-      </Routes>
-    </div>
+    <>
+      <div className={`page-transition ${transitionStage}`}>
+        <Routes location={displayLocation}>
+          <Route path="/" element={dashboardPage} />
+          <Route path="/docs-demo" element={docsDemo} />
+          <Route path="/ops-demo" element={opsDemo} />
+          <Route path="/doc/:fileId" element={<FileDocPage />} />
+          <Route path="/companion" element={companionPage} />
+        </Routes>
+      </div>
+      {renderTourNav()}
+    </>
   );
 }
 
@@ -2640,6 +3190,88 @@ const FileDocPage = () => {
       </div>
     );
   }
+  if (file.id === "calendar") {
+    const personaCalendarEntries = calendarEntries[filePersona];
+    const fileAppRoute = getRouteForFile(file.id);
+    const fileAppLabel = getAppLaunchLabel(file);
+    return (
+      <div className="demo-page calendar-doc">
+        <div className="doc-view-head">
+          <div className="doc-head-left">
+            <div className="doc-head-icon" aria-hidden="true">
+              {file.icon}
+            </div>
+            <div>
+              <span className="doc-head-app">{file.app}</span>
+              <h1>{file.name}</h1>
+              <p>{file.description}</p>
+            </div>
+          </div>
+        </div>
+        <div className="doc-head-actions doc-view-actions">
+          <div className="doc-head-actions-left">
+            <Link className="ghost subtle" to="/">
+              ← Dashboard
+            </Link>
+            <Link className="ghost subtle" to="/companion">
+              Companion
+            </Link>
+          </div>
+          <div className="doc-head-actions-right">
+            <Link className="ghost app-launch" to={fileAppRoute}>
+              {fileAppLabel}
+            </Link>
+            <button type="button" className="ghost">
+              Share
+            </button>
+            <button type="button" className="primary">
+              Export PDF
+            </button>
+          </div>
+        </div>
+        <div className="doc-view-meta">
+          <span>{file.type}</span>
+          <span>{file.meta}</span>
+          <span>{file.status}</span>
+        </div>
+        <div className="calendar-doc-body">
+          <CalendarDayPreview
+            entries={personaCalendarEntries}
+            startMinutes={6 * 60}
+            endMinutes={22 * 60}
+            size="large"
+          />
+          <aside className="calendar-doc-legend">
+            <h4>Today’s events</h4>
+            <ul>
+              {personaCalendarEntries.map((entry) => (
+                <li key={`calendar-doc-${entry.id}`}>
+                  <span className={`badge-dot ${entry.color}`} />
+                  <div>
+                    <strong>{entry.title}</strong>
+                    <small>{entry.time}</small>
+                    <span>{entry.location}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            {doc?.inlineTips?.length ? (
+              <div className="inline-tips compact">
+                <h5>Automation notes</h5>
+                <ul>
+                  {doc.inlineTips.map((tip) => (
+                    <li key={`calendar-doc-tip-${tip}`}>{tip}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </aside>
+        </div>
+      </div>
+    );
+  }
+  const fileAppRoute = getRouteForFile(file.id);
+  const fileAppLabel = getAppLaunchLabel(file);
   return (
     <div className="demo-page doc-view">
       <div className="doc-view-head">
@@ -2653,19 +3285,26 @@ const FileDocPage = () => {
             <p>{file.description}</p>
           </div>
         </div>
-        <div className="doc-head-actions">
+      </div>
+      <div className="doc-head-actions doc-view-actions">
+        <div className="doc-head-actions-left">
+          <Link className="ghost subtle" to="/">
+            ← Dashboard
+          </Link>
+          <Link className="ghost subtle" to="/companion">
+            Companion
+          </Link>
+        </div>
+        <div className="doc-head-actions-right">
+          <Link className="ghost app-launch" to={fileAppRoute}>
+            {fileAppLabel}
+          </Link>
           <button type="button" className="ghost">
             Share
           </button>
           <button type="button" className="primary">
             Export PDF
           </button>
-          <Link className="ghost subtle" to="/companion">
-            ← Back to companion
-          </Link>
-          <Link className="ghost subtle" to="/">
-            ← Back to dashboard
-          </Link>
         </div>
       </div>
       <div className="doc-view-meta">
@@ -2849,6 +3488,72 @@ const FileDocPage = () => {
       ) : (
         <p>This file doesn’t have a full document canvas yet.</p>
       )}
+    </div>
+  );
+};
+
+const CalendarDayPreview = ({
+  entries,
+  startMinutes,
+  endMinutes,
+  size = "small",
+}: CalendarDayPreviewProps) => {
+  const isSmall = size === "small";
+  const totalMinutes = Math.max(endMinutes - startMinutes, 60);
+  const hourMarks = Array.from(
+    { length: Math.floor(totalMinutes / 60) + 1 },
+    (_, index) => startMinutes + index * 60
+  );
+  const formatLabel = (minutes: number) => {
+    const hour = Math.floor(minutes / 60);
+    const suffix = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour % 12 || 12;
+    return `${displayHour} ${suffix}`;
+  };
+  return (
+    <div className={`calendar-day-view ${size}`}>
+      <div className="calendar-hours">
+        {hourMarks.map((minutes) => {
+          const offset = minutes - startMinutes;
+          const top = (offset / totalMinutes) * 100;
+          return (
+            <span key={`hour-${minutes}`} style={{ top: `${top}%` }}>
+              {formatLabel(minutes)}
+            </span>
+          );
+        })}
+      </div>
+      <div className="calendar-day-column">
+        {entries.map((entry) => {
+          const clampedStart = Math.max(entry.startMinutes, startMinutes);
+          const clampedEnd = Math.min(entry.endMinutes, endMinutes);
+          const offset = clampedStart - startMinutes;
+          const duration = Math.max(clampedEnd - clampedStart, 30);
+          const top = (offset / totalMinutes) * 100;
+          const height = Math.max(
+            (duration / totalMinutes) * 100,
+            (45 / totalMinutes) * 100
+          );
+          return (
+            <div
+              key={`timeline-${entry.id}`}
+              className={`calendar-event-block ${entry.color} ${
+                isSmall ? "small" : "large"
+              }`}
+              style={{ top: `${top}%`, height: `${height}%` }}
+            >
+              <div className="calendar-event-block-time">{entry.time}</div>
+              <strong className={isSmall ? "single-line" : ""}>
+                {entry.title}
+              </strong>
+              <span className="calendar-event-block-location">
+                {entry.location}
+              </span>
+              <span className="calendar-event-block-meta">{entry.meta}</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
