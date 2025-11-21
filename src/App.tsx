@@ -72,6 +72,13 @@ type UseCaseCard = {
   demoStepId: string;
 };
 
+type ChatPromptChip = {
+  label: string;
+  prompt: string;
+  persona?: Persona;
+  fileId?: string;
+};
+
 type WhisperTone = "info" | "alert" | "plan";
 
 type WhisperSuggestion = {
@@ -775,6 +782,7 @@ function App() {
   ]);
   const tourTrackRef = useRef<HTMLDivElement>(null);
   const [tourCollapsed, setTourCollapsed] = useState(false);
+  const [pendingFileId, setPendingFileId] = useState<string | null>(null);
 
   useEffect(() => {
     const first = driveFiles[persona][0];
@@ -795,6 +803,14 @@ function App() {
   useEffect(() => {
     setChatLog(initialChat(selectedFile));
   }, [selectedFile]);
+
+  useEffect(() => {
+    if (pendingFileId) {
+      setSelectedFileId(pendingFileId);
+      setDocCanvasOpen(false);
+      setPendingFileId(null);
+    }
+  }, [pendingFileId, persona]);
 
   const currentStep = demoSteps.find(
     (step) => step.persona === persona && step.fileId === selectedFile?.id
@@ -831,6 +847,62 @@ function App() {
   const personaSpotlight =
     useCaseHighlights.find((card) => card.id === spotlightId) ??
     useCaseHighlights[0];
+
+  const chatPromptChips: ChatPromptChip[] =
+    persona === "student"
+      ? [
+          {
+            label: "Plan my week",
+            prompt: "What should I tackle this week?",
+            persona: "student",
+            fileId: "syllabus",
+          },
+          {
+            label: "Bundle this reading",
+            prompt: "Can you bundle this reading with flashcards?",
+            persona: "student",
+            fileId: "reading",
+          },
+          {
+            label: "Prep concept map",
+            prompt: "Highlight risky topics in my notes and update the map.",
+            persona: "student",
+            fileId: "notes",
+          },
+        ]
+      : [
+          {
+            label: "Meeting recap",
+            prompt: "Draft the recap email for this meeting.",
+            persona: "professional",
+            fileId: "meeting",
+          },
+          {
+            label: "Vendor risks",
+            prompt: "Surface the key risks and deadlines in this report.",
+            persona: "professional",
+            fileId: "vendor",
+          },
+          {
+            label: "Rebalance schedule",
+            prompt: "My afternoon is overloaded—rebalance it for me.",
+            persona: "professional",
+            fileId: "calendar",
+          },
+        ];
+
+  const handleChatChipClick = (chip: ChatPromptChip) => {
+    if (chip.persona && chip.persona !== persona) {
+      setPersona(chip.persona);
+      if (chip.fileId) {
+        setPendingFileId(chip.fileId);
+      }
+    } else if (chip.fileId) {
+      setSelectedFileId(chip.fileId);
+      setDocCanvasOpen(false);
+    }
+    setPrompt(chip.prompt);
+  };
 
   const scrollTour = (direction: "left" | "right") => {
     if (!tourTrackRef.current) return;
@@ -1319,7 +1391,7 @@ function App() {
   };
 
   const companionChat = (
-    <div className="chat-stack">
+    <div className="chat-stack hero">
       <div className="chat-feed">
         {chatLog.map((entry, index) => (
           <div
@@ -1414,6 +1486,42 @@ function App() {
               <button key={chip}>{chip}</button>
             ))}
           </div>
+
+          <section className="chat-section">
+            <div className="panel companion-chat-panel hero">
+              <div className="companion-chat-head">
+                <div>
+                  <span className="badge soft">Always-on agent</span>
+                  <h4>Companion chat</h4>
+                  <p>
+                    {selectedFile
+                      ? `Watching ${selectedFile.name} right now.`
+                      : "Connected to Drive + Calendar."}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="ghost subtle"
+                  onClick={() => setCompanionExpanded(true)}
+                >
+                  Pop out
+                </button>
+              </div>
+              <div className="chat-suggestions-row">
+                {chatPromptChips.map((chip) => (
+                  <button
+                    key={chip.label}
+                    type="button"
+                    className="chat-chip"
+                    onClick={() => handleChatChipClick(chip)}
+                  >
+                    {chip.label}
+                  </button>
+                ))}
+              </div>
+              {companionChat}
+            </div>
+          </section>
 
           <div className="insight-banner">
             <div>
@@ -1521,10 +1629,20 @@ function App() {
                       setDocCanvasOpen(false);
                     }}
                   >
-                    <div>{file.icon}</div>
-                    <strong>{file.name}</strong>
-                    <span className="file-meta">{file.meta}</span>
-                    <div className="chip">{file.tag}</div>
+                    <div className="file-card-head">
+                      <div className="file-icon">{file.icon}</div>
+                      <div className="file-card-title">
+                        <strong>{file.name}</strong>
+                        <span className="file-meta">{file.meta}</span>
+                      </div>
+                      <div className="chip">{file.tag}</div>
+                    </div>
+                    <p className="file-description">{file.description}</p>
+                    <div className="file-card-footer">
+                      <span>{file.folder}</span>
+                      <span>{file.owner}</span>
+                      <span>{file.size}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1599,22 +1717,6 @@ function App() {
               </div>
             </div>
 
-            <div className="section-card chat-card sidebar-chat">
-              <div className="chat-header">
-                <div>
-                  <strong>Companion chat</strong>
-                  <span>Connected to Drive + Calendar</span>
-                </div>
-                <button
-                  type="button"
-                  className="ghost"
-                  onClick={() => setCompanionExpanded(true)}
-                >
-                  Expand
-                </button>
-              </div>
-              {companionChat}
-            </div>
             <div className="section-card sidebar-whisper">
               <div className="chat-header">
                 <div>

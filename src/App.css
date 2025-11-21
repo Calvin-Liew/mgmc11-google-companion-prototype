@@ -387,6 +387,10 @@
   gap: 20px;
 }
 
+.chat-section {
+  margin-top: 16px;
+}
+
 .focus-panel {
   grid-column: span 2;
 }
@@ -639,31 +643,90 @@
 
 .file-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  width: 100%;
 }
 
 .file-card {
   border: 1px solid #e0e4eb;
-  border-radius: 14px;
-  padding: 12px;
-  background: #fff;
+  border-radius: 18px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fbff 100%);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 14px;
   cursor: pointer;
-  transition: border 0.2s, transform 0.2s;
+  transition: border 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
 .file-card.active {
   border-color: #1a73e8;
-  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.15);
+  box-shadow: 0 10px 24px rgba(26, 115, 232, 0.15);
   transform: translateY(-2px);
+}
+
+.file-card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.file-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #e8f0fe;
+  display: grid;
+  place-items: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.file-card-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .file-meta {
   font-size: 0.8rem;
   color: #5f6368;
+}
+
+.file-description {
+  margin: 0;
+  color: #3c4043;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.file-card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  font-size: 0.78rem;
+  color: #5f6368;
+}
+
+.file-card-footer span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  padding-left: 10px;
+}
+
+.file-card-footer span::before {
+  content: "";
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #d2d6dc;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .chip {
@@ -1303,10 +1366,56 @@
   padding: 0;
 }
 
-.sidebar-chat {
+.companion-chat-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.companion-chat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.companion-chat-head h4 {
+  margin: 4px 0 2px;
+}
+
+.companion-chat-head p {
+  margin: 0;
+  color: #5f6368;
+  font-size: 0.85rem;
+}
+
+.chat-suggestions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chat-chip {
   border: 1px solid #e0e4eb;
-  border-radius: 16px;
-  overflow: hidden;
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  color: #1b2432;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.chat-chip:hover {
+  border-color: #1a73e8;
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.12);
+}
+
+.ghost.subtle {
+  border-color: #d2d6dc;
+  background: #f8fafc;
+  color: #1a73e8;
 }
 
 .chat-header {
@@ -1358,6 +1467,14 @@
   display: flex;
   flex-direction: column;
   height: 280px;
+}
+
+.chat-stack.hero {
+  height: 360px;
+}
+
+.chat-stack.hero .chat-feed {
+  padding: 20px;
 }
 
 .chat-feed {
@@ -1547,8 +1664,8 @@
 
 .tour-card {
   border: 1px solid #e0e4eb;
-  border-radius: 16px;
-  padding: 16px;
+  border-radius: 18px;
+  padding: 18px 20px;
   background: #fff;
   min-width: clamp(240px, 32vw, 320px);
   text-align: left;
@@ -1556,7 +1673,7 @@
   transition: border 0.2s, transform 0.2s, box-shadow 0.2s;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
   scroll-snap-align: start;
 }
 
@@ -1574,14 +1691,14 @@
 .tour-card-top {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .tour-card-body {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin: 6px 0 4px;
+  gap: 10px;
+  margin: 8px 0 6px;
 }
 
 .tour-chip {
@@ -1886,6 +2003,14 @@
     width: 100%;
     justify-content: space-between;
     flex-wrap: wrap;
+  }
+  .chat-suggestions-row {
+    flex-direction: column;
+    width: 100%;
+  }
+  .chat-chip {
+    width: 100%;
+    text-align: center;
   }
   .suggestion-icon {
     width: 40px;
