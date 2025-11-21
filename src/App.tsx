@@ -3,11 +3,14 @@ import "./App.css";
 
 type Persona = "student" | "professional";
 
+type GoogleWorkspaceApp = "Docs" | "Sheets" | "Slides";
+
 type DriveFile = {
   id: string;
   name: string;
   type: string;
   icon: string;
+  app: GoogleWorkspaceApp;
   folder: string;
   owner: string;
   modified: string;
@@ -131,9 +134,10 @@ const driveFiles: Record<Persona, DriveFile[]> = {
   student: [
     {
       id: "syllabus",
-      name: "CS 241 Syllabus",
-      type: "Doc",
-      icon: "📘",
+      name: "CS 241 Plan",
+      type: "Google Docs",
+      app: "Docs",
+      icon: "📄",
       folder: "Week zero",
       owner: "me",
       modified: "May 20",
@@ -145,9 +149,10 @@ const driveFiles: Record<Persona, DriveFile[]> = {
     },
     {
       id: "reading",
-      name: "Week 3 Research Reader.pdf",
-      type: "PDF",
-      icon: "📚",
+      name: "Week 3 Reader",
+      type: "Google Docs",
+      app: "Docs",
+      icon: "📖",
       folder: "Readings",
       owner: "me",
       modified: "May 18",
@@ -159,8 +164,9 @@ const driveFiles: Record<Persona, DriveFile[]> = {
     },
     {
       id: "notes",
-      name: "Lecture Notes – Neural Nets",
-      type: "Doc",
+      name: "Neural Net Notes",
+      type: "Google Docs",
+      app: "Docs",
       icon: "📝",
       folder: "Lecture capture",
       owner: "me",
@@ -174,7 +180,8 @@ const driveFiles: Record<Persona, DriveFile[]> = {
     {
       id: "exam",
       name: "Midterm Blueprint",
-      type: "Sheet",
+      type: "Google Sheets",
+      app: "Sheets",
       icon: "📊",
       folder: "Assessments",
       owner: "me",
@@ -189,8 +196,9 @@ const driveFiles: Record<Persona, DriveFile[]> = {
   professional: [
     {
       id: "meeting",
-      name: "CX Weekly Sync Notes",
-      type: "Doc",
+      name: "CX Sync",
+      type: "Google Docs",
+      app: "Docs",
       icon: "📄",
       folder: "Meetings",
       owner: "me",
@@ -203,8 +211,9 @@ const driveFiles: Record<Persona, DriveFile[]> = {
     },
     {
       id: "vendor",
-      name: "Vendor Performance Report",
-      type: "Slides",
+      name: "Vendor KPIs",
+      type: "Google Slides",
+      app: "Slides",
       icon: "📈",
       folder: "Reporting",
       owner: "me",
@@ -217,8 +226,9 @@ const driveFiles: Record<Persona, DriveFile[]> = {
     },
     {
       id: "calendar",
-      name: "Executive Calendar Pulse",
-      type: "Sheet",
+      name: "Calendar Pulse",
+      type: "Google Sheets",
+      app: "Sheets",
       icon: "🗓️",
       folder: "Planning",
       owner: "me",
@@ -946,9 +956,9 @@ function App() {
             <div className="section-card hero">
               <h4>Syllabus-to-Schedule Pack</h4>
               <p>
-                Turn course outlines into study plans. Companion auto-populated
-                every deadline into Calendar and organised Drive folders by
-                week.
+                Turn Google Docs syllabi into adaptive plans. Companion writes a
+                Sheets tracker, syncs every deadline to Google Calendar, and
+                organises Drive folders by week.
               </p>
               <div className="assignment-grid">
                 {assignments.map((item) => (
@@ -1005,8 +1015,8 @@ function App() {
             <div className="section-card hero">
               <h4>Smart Reading Pack</h4>
               <p>
-                Condense a 60-page PDF into a one-page summary, a concise slide
-                deck, and flashcards in Sheets.
+                Turn long-form readings into Google Docs summaries, Slides
+                decks, and Sheets flashcards — all auto-linked back to Drive.
               </p>
               <div className="doc-card">
                 <h4>Auto summary card</h4>
@@ -1054,8 +1064,9 @@ function App() {
             <div className="section-card hero">
               <h4>Living concept map</h4>
               <p>
-                Connect ideas across readings and notes. Companion keeps the map
-                updated every time you drop files in Drive.
+                Connect Google Docs notes, Slides snippets, and Sheets trackers
+                automatically. Companion keeps the map updated every time you
+                drop files in Drive.
               </p>
               <div className="concept-map">
                 {conceptNodes.map((node) => (
@@ -1092,8 +1103,8 @@ function App() {
             <div className="section-card hero">
               <h4>Deadline-Aware Exam Prep</h4>
               <p>
-                Prevent cramming and make sure you walk into exams feeling
-                prepared. Study blocks flex the moment deadlines move.
+                Prevent cramming by letting Sheets study plans respond to Docs
+                updates and Calendar shifts the moment deadlines move.
               </p>
               <div className="assignment-grid">
                 {studyBlocks.map((slot) => (
@@ -1140,8 +1151,8 @@ function App() {
             <div className="section-card hero">
               <h4>AI Meeting Chief of Staff</h4>
               <p>
-                Captures and organises discussions instantly — summary,
-                decisions, and action items are already packaged.
+                Captures Google Docs notes live, syncs owners to Tasks/Sheets,
+                and drafts the Gmail recap before you leave the meeting.
               </p>
               <div className="doc-card">
                 <h4>Meeting Summary</h4>
@@ -1189,8 +1200,8 @@ function App() {
             <div className="section-card hero">
               <h4>Auto-Generated Dashboards & Briefs</h4>
               <p>
-                Vendor Performance Report → Executive Brief with key highlights,
-                KPIs, and suggested talking points.
+                Google Slides decks become executive briefs automatically —
+                Sheets KPIs, Slides visuals, and Gmail-ready talking points.
               </p>
               <ul>
                 {highlights.map((item) => (
@@ -1236,8 +1247,8 @@ function App() {
             <div className="section-card hero">
               <h4>Work Rhythm Optimiser</h4>
               <p>
-                Your afternoon is overloaded — consider a focus block from 3–4
-                PM.
+                Google Sheets workload + Calendar density combine to spot
+                overload instantly — Companion proposes focus blocks for you.
               </p>
               <div className="assignment-grid">
                 {focusBlocks.map((focus) => (
@@ -1295,16 +1306,19 @@ function App() {
                 <strong>{file.name}</strong>
                 <span className="recent-folder">{file.folder}</span>
               </div>
-              <span className="recent-tag">{file.tag}</span>
+              <span className="recent-tag">{file.app}</span>
             </div>
             <p className="recent-description">{file.description}</p>
             <div className="recent-meta">
-              <span>{file.meta}</span>
-              <span>{file.owner}</span>
-              <span>{file.modified}</span>
-              <span>{file.size}</span>
+              <span>📁 {file.folder}</span>
+              <span>👤 {file.owner}</span>
+              <span>📅 {file.modified}</span>
+              <span>⬇️ {file.size}</span>
             </div>
-            <span className="recent-status">{file.status}</span>
+            <div className="recent-status">
+              <span>{file.tag}</span>
+              <strong>{file.status}</strong>
+            </div>
           </div>
         </button>
       ))}
@@ -1630,18 +1644,31 @@ function App() {
                     }}
                   >
                     <div className="file-card-head">
-                      <div className="file-icon">{file.icon}</div>
-                      <div className="file-card-title">
-                        <strong>{file.name}</strong>
-                        <span className="file-meta">{file.meta}</span>
+                      <div className="file-card-info">
+                        <div className="file-icon">{file.icon}</div>
+                        <div className="file-card-title">
+                          <div className="file-card-title-row">
+                            <strong>{file.name}</strong>
+                            <span
+                              className={`file-app-badge ${file.app.toLowerCase()}`}
+                            >
+                              {file.app}
+                            </span>
+                          </div>
+                          <span className="file-meta">{file.meta}</span>
+                        </div>
                       </div>
-                      <div className="chip">{file.tag}</div>
+                      <div className="chip file-tag">{file.tag}</div>
                     </div>
                     <p className="file-description">{file.description}</p>
                     <div className="file-card-footer">
-                      <span>{file.folder}</span>
-                      <span>{file.owner}</span>
-                      <span>{file.size}</span>
+                      <span>📁 {file.folder}</span>
+                      <span>👤 {file.owner}</span>
+                      <span>📅 {file.modified}</span>
+                      <span>⬇️ {file.size}</span>
+                    </div>
+                    <div className="file-status-row">
+                      <span>{file.status}</span>
                     </div>
                   </div>
                 ))}
