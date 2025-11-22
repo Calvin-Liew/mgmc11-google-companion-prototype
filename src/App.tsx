@@ -382,7 +382,7 @@ const whisperSuggestions: Record<Persona, WhisperSuggestion[]> = {
   student: [
     {
       message:
-        "I noticed this reading matches your Week 4 topic — want me to bundle it?",
+        "I noticed this reading matches your Week 4 topic. Want me to bundle it?",
       action: "Bundle it",
       tone: "plan",
       time: "Just now",
@@ -404,7 +404,7 @@ const whisperSuggestions: Record<Persona, WhisperSuggestion[]> = {
   professional: [
     {
       message:
-        "Your schedule looks packed — want help rebalancing the afternoon?",
+        "Your schedule looks packed. Want help rebalancing the afternoon?",
       action: "Rebalance",
       tone: "alert",
       time: "Just now",
@@ -416,7 +416,7 @@ const whisperSuggestions: Record<Persona, WhisperSuggestion[]> = {
       time: "4m ago",
     },
     {
-      message: "Deadline in 3 days — should I draft a status brief?",
+      message: "Deadline in 3 days. Should I draft a status brief?",
       action: "Do it",
       tone: "plan",
       time: "9m ago",
@@ -462,7 +462,7 @@ const cannedGlobalResponses: CannedResponse[] = [
     triggers: ["meeting recap", "cx sync", "chief of staff"],
     persona: "professional",
     fileId: "meeting",
-    text: "📄 CX Sync Doc is ready — summary, decisions, and owners are staged. Should I drop the Gmail recap in drafts?",
+    text: "📄 CX Sync Doc is ready. Summary, decisions, and owners are staged. Should I drop the Gmail recap in drafts?",
     linkLabel: "Review CX Sync Doc",
     linkTo: "/doc/meeting",
   },
@@ -694,7 +694,7 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
     {
       id: "cal-1",
       day: "Mon",
-      time: "3:00 – 4:00 PM",
+      time: "3:00 to 4:00 PM",
       title: "Week 3 Reading Sprint",
       meta: "Slides + flashcards auto-prepped",
       status: "Focus block",
@@ -707,7 +707,7 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
     {
       id: "cal-7",
       day: "Mon",
-      time: "5:30 – 6:00 PM",
+      time: "5:30 to 6:00 PM",
       title: "Reflection buffer",
       meta: "Companion logged journaling + review prompts.",
       status: "AI hold",
@@ -720,7 +720,7 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
     {
       id: "cal-8",
       day: "Mon",
-      time: "6:15 – 7:00 PM",
+      time: "6:15 to 7:00 PM",
       title: "Slides polish",
       meta: "Auto pulled notes + figures to prep deck.",
       status: "Auto reminder",
@@ -733,7 +733,7 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
     {
       id: "cal-2",
       day: "Tue",
-      time: "9:30 – 10:15 AM",
+      time: "9:30 to 10:15 AM",
       title: "Lab 02 reflection",
       meta: "Companion added checklist",
       status: "Auto reminder",
@@ -746,7 +746,7 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
     {
       id: "cal-3",
       day: "Thu",
-      time: "1:00 – 2:00 PM",
+      time: "1:00 to 2:00 PM",
       title: "Midterm cadence review",
       meta: "Risk detection on track",
       status: "Calendar hold",
@@ -761,7 +761,7 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
     {
       id: "cal-4",
       day: "Mon",
-      time: "11:00 – 11:45 AM",
+      time: "11:00 to 11:45 AM",
       title: "CX Weekly Sync",
       meta: "Recap + actions drafted",
       status: "Summary ready",
@@ -774,7 +774,7 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
     {
       id: "cal-9",
       day: "Mon",
-      time: "12:10 – 12:30 PM",
+      time: "12:10 to 12:30 PM",
       title: "Commute buffer",
       meta: "Traffic watch flagged shuttle delays.",
       status: "AI hold",
@@ -787,7 +787,7 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
     {
       id: "cal-10",
       day: "Mon",
-      time: "1:00 – 1:30 PM",
+      time: "1:00 to 1:30 PM",
       title: "Deck review focus",
       meta: "Doc notes + Slides links pinned automatically.",
       status: "Focus block",
@@ -800,7 +800,7 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
     {
       id: "cal-5",
       day: "Tue",
-      time: "2:30 – 3:00 PM",
+      time: "2:30 to 3:00 PM",
       title: "Vendor risk briefing",
       meta: "Exec brief queued",
       status: "Prep now",
@@ -813,7 +813,7 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
     {
       id: "cal-6",
       day: "Thu",
-      time: "4:00 – 5:00 PM",
+      time: "4:00 to 5:00 PM",
       title: "Focus block",
       meta: "Companion protected time",
       status: "Focus block",
@@ -833,7 +833,7 @@ const calendarThreadSeed: CalendarChatMessage[] = [
     author: "Companion",
     stamp: "07:42 AM",
     tag: "Auto hold",
-    text: "I protected 3:00–3:45 PM for deck polish since the CX deck is due at 5.",
+    text: "I protected 3:00 to 3:45 PM for deck polish since the CX deck is due at 5.",
     detail: "Invite list updated + Slides link pinned to the block.",
     action: "See hold",
   },
@@ -851,7 +851,7 @@ const calendarThreadSeed: CalendarChatMessage[] = [
     author: "Companion",
     stamp: "07:45 AM",
     tag: "Reschedule",
-    text: "Done. Vendor Ops accepted 2:15–2:45 PM; I posted the update and attached the exec brief.",
+    text: "Done. Vendor Ops accepted 2:15 to 2:45 PM; I posted the update and attached the exec brief.",
     detail: "Travel buffer recalculated. Want me to notify Maya?",
     action: "Notify Maya",
   },
@@ -869,7 +869,7 @@ const calendarThreadSeed: CalendarChatMessage[] = [
 
 const documentCanvases: Record<string, DocumentCanvas> = {
   syllabus: {
-    title: "CS 241 Syllabus – AI-assisted annotations",
+    title: "CS 241 Syllabus: AI assisted annotations",
     subtitle:
       "Companion aligned every requirement into one unified course plan.",
     status: "Schedule pack live",
@@ -923,13 +923,13 @@ const documentCanvases: Record<string, DocumentCanvas> = {
     ],
   },
   reading: {
-    title: "Modern ML Systems – Chapter 4 (Annotated)",
+    title: "Modern ML Systems: Chapter 4 (Annotated)",
     subtitle: "60-page textbook excerpt with Companion overlays and AI notes.",
     status: "Summary + flashcards ready",
     sections: [
       {
         id: "pages14",
-        heading: "Pages 14–18 · Attention primer",
+        heading: "Pages 14 to 18 · Attention primer",
         excerpt:
           "The doc preview shows the actual Chapter 4 paragraphs (Diaz 2024, pp. 14‑18) with pagination intact so it feels like a textbook PDF. Companion pins eq. (4.2) and the “vanishing gradient” caution with gold annotation pills.",
         insight:
@@ -939,7 +939,7 @@ const documentCanvases: Record<string, DocumentCanvas> = {
       },
       {
         id: "lab-map",
-        heading: "Lab variable mapping (Pages 22–27)",
+        heading: "Lab variable mapping (Pages 22 to 27)",
         excerpt:
           "Blue tags such as “Lab 03 · alpha_s” sit on top of the real text wherever the rubric variables appear. Companion preserves line numbers so you can cite the textbook without leaving the preview.",
         insight:
@@ -1013,7 +1013,7 @@ const documentCanvases: Record<string, DocumentCanvas> = {
     flashcardDeckLabel: "Open Slides flashcards",
   },
   notes: {
-    title: "Lecture Notes – Neural Nets",
+    title: "Lecture Notes: Neural Nets",
     subtitle: "Living concept map overlays the doc with linked ideas.",
     status: "Concept map refreshed",
     courseLabel: "ML 241 · Machine Learning Studio",
@@ -1225,7 +1225,7 @@ const initialChat = (file?: DriveFile): ChatEntry[] => {
       },
       {
         role: "agent",
-        text: "Calendar holds, Tasks, and Drive folders are already linked—just tell me what to adjust.",
+    text: "Calendar holds, Tasks, and Drive folders are already linked. Just tell me what to adjust.",
       },
     ];
   }
@@ -1282,11 +1282,11 @@ function App() {
   >("fade-in");
 
   useEffect(() => {
-    if (pendingFileId) return;
+    if (pendingFileId || tourActive) return;
     const first = driveFiles[persona][0];
     setSelectedFileId(first.id);
     setDocCanvasOpen(false);
-  }, [persona, pendingFileId]);
+  }, [persona, pendingFileId, tourActive]);
 
   const filesForPersona = driveFiles[persona];
   const selectedFile = useMemo(
@@ -1303,7 +1303,7 @@ function App() {
     if (!selectedFile) return;
     const fileSwitchText =
       selectedFile.id === "syllabus"
-        ? "Refreshing the CS 241 plan—ask me to tweak the cadence, grading focus, or push updates to Calendar."
+      ? "Refreshing the CS 241 plan. Ask me to tweak the cadence, grading focus, or push updates to Calendar."
         : `Switched focus to ${selectedFile.name}. Ask me to open it in ${selectedFile.type}, sync it to Calendar, or prep a recap.`;
     setChatHistory((prev) => ({
       ...prev,
@@ -1412,37 +1412,44 @@ function App() {
     if (tourActive) {
       goToTourStep(index);
     } else {
+      setPendingFileId(step.fileId);
       setPersona(step.persona);
-      setSelectedFileId(step.fileId);
       setDocCanvasOpen(false);
     }
   };
 
-  const renderTourCarousel = () => (
-    <div className="tour-chip-row" ref={tourTrackRef}>
-      {demoSteps.map((step, index) => {
-        const isActive = activeDemoStep?.id === step.id;
-        const isStudent = step.persona === "student";
-        return (
-          <button
-            key={step.id}
-            type="button"
-            className={`tour-chip-card ${isActive ? "active" : ""} ${
-              isStudent ? "student" : "pro"
-            }`}
-            onClick={() => focusTourStep(index, step)}
-            aria-pressed={isActive}
-          >
-            <span className="tour-chip-pill">
-              {isStudent ? "🎓 Student" : "💼 Professional"}
-            </span>
-            <strong>{step.title}</strong>
-            <small>{step.subtitle}</small>
-          </button>
-        );
-      })}
-    </div>
-  );
+  const renderTourCarousel = () => {
+    const chipsDisabled = !tourActive;
+    return (
+      <div className="tour-chip-row" ref={tourTrackRef}>
+        {demoSteps.map((step, index) => {
+          const isActive = activeDemoStep?.id === step.id;
+          const isStudent = step.persona === "student";
+          return (
+            <button
+              key={step.id}
+              type="button"
+              className={`tour-chip-card ${isActive ? "active" : ""} ${
+                isStudent ? "student" : "pro"
+              } ${chipsDisabled ? "disabled" : ""}`}
+              onClick={
+                chipsDisabled ? undefined : () => focusTourStep(index, step)
+              }
+              aria-pressed={isActive}
+              aria-disabled={chipsDisabled}
+              disabled={chipsDisabled}
+            >
+              <span className="tour-chip-pill">
+                {isStudent ? "🎓 Student" : "💼 Professional"}
+              </span>
+              <strong>{step.title}</strong>
+              <small>{step.subtitle}</small>
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
   const shouldShowTourNav = tourActive || location.pathname === "/";
   const renderTourNav = () => {
     if (!shouldShowTourNav) return null;
@@ -1467,46 +1474,63 @@ function App() {
           <div className="tour-compact-actions">
             {guidedStep ? (
               <>
-                <button
-                  type="button"
-                  className="ghost subtle"
-                  onClick={handleTourPrev}
-                  disabled={tourStepIndex === 0}
-                >
-                  Prev
-                </button>
-                <button
-                  type="button"
-                  className="ghost subtle"
-                  onClick={openTourScenario}
-                >
-                  Open scenario
-                </button>
-                <button
-                  type="button"
-                  className="primary"
-                  onClick={handleTourNext}
-                >
-                  {tourStepIndex === totalTourSteps - 1
-                    ? "Finish tour"
-                    : "Next scenario"}
-                </button>
-                <button type="button" className="ghost subtle" onClick={exitTour}>
-                  Exit
-                </button>
+                <div className="tour-primary-actions">
+                  <button
+                    type="button"
+                    className="ghost subtle"
+                    onClick={handleTourPrev}
+                    disabled={tourStepIndex === 0}
+                  >
+                    Prev
+                  </button>
+                  <button
+                    type="button"
+                    className="ghost subtle"
+                    onClick={openTourScenario}
+                  >
+                    Open scenario
+                  </button>
+                  <button
+                    type="button"
+                    className="primary"
+                    onClick={handleTourNext}
+                  >
+                    {tourStepIndex === totalTourSteps - 1
+                      ? "Finish tour"
+                      : "Next scenario"}
+                  </button>
+                </div>
+                <div className="tour-secondary-actions">
+                  <button
+                    type="button"
+                    className="ghost subtle tour-collapse-btn"
+                    onClick={() => setTourCollapsed((prev) => !prev)}
+                  >
+                    {tourCollapsed ? "Expand" : "Collapse"}
+                  </button>
+                  <button
+                    type="button"
+                    className="tour-exit-btn"
+                    onClick={exitTour}
+                  >
+                    Exit tour
+                  </button>
+                </div>
               </>
             ) : (
-              <button type="button" className="primary" onClick={startTour}>
-                Play guided tour
-              </button>
+              <div className="tour-primary-actions">
+                <button type="button" className="primary" onClick={startTour}>
+                  Play guided tour
+                </button>
+                <button
+                  type="button"
+                  className="ghost subtle tour-collapse-btn"
+                  onClick={() => setTourCollapsed((prev) => !prev)}
+                >
+                  {tourCollapsed ? "Expand" : "Collapse"}
+                </button>
+              </div>
             )}
-            <button
-              type="button"
-              className="ghost subtle tour-collapse-btn"
-              onClick={() => setTourCollapsed((prev) => !prev)}
-            >
-              {tourCollapsed ? "Expand" : "Collapse"}
-            </button>
           </div>
         </div>
         {!tourCollapsed && (
@@ -1619,7 +1643,7 @@ function App() {
           },
           {
             label: "Rebalance schedule",
-            prompt: "My afternoon is overloaded—rebalance it for me.",
+            prompt: "My afternoon is overloaded. Rebalance it for me.",
             persona: "professional",
             fileId: "calendar",
           },
@@ -1722,7 +1746,7 @@ function App() {
         file.name
       }: I can open it in ${file.type}, sync it to Calendar, or prep a brief.`;
     }
-    return "I’m still watching Drive — ask me about Docs, Sheets, or Slides anytime.";
+    return "I’m still watching Drive. Ask me about Docs, Sheets, or Slides anytime.";
   };
 
   const getGlobalScriptedResponse = (
@@ -1753,8 +1777,8 @@ function App() {
     const fallbackText = match
       ? match.response
       : personaContext === "student"
-      ? "Student workspace is synced — I can spin up study plans, reading packs, or exam trackers directly from Drive."
-      : "Professional workspace stays aligned — Slides briefs, Gmail recaps, and Sheets KPIs are ready on cue.";
+      ? "Student workspace is synced. I can spin up study plans, reading packs, or exam trackers directly from Drive."
+      : "Professional workspace stays aligned. Slides briefs, Gmail recaps, and Sheets KPIs are ready on cue.";
     return { entry: { role: "agent", text: fallbackText } };
   };
 
@@ -1855,7 +1879,7 @@ function App() {
               <h4>Smart Reading Pack</h4>
               <p>
                 Turn long-form readings into Google Docs summaries, Slides
-                decks, and Sheets flashcards — all auto-linked back to Drive.
+                decks, and Sheets flashcards. All auto linked back to Drive.
               </p>
               <div className="doc-card">
                 <h4>Auto summary card</h4>
@@ -1933,9 +1957,9 @@ function App() {
 
       if (selectedFile.id === "exam") {
         const studyBlocks = [
-          { block: "Mon 3–4 PM", focus: "Past exams", status: "Scheduled" },
-          { block: "Wed 9–11 AM", focus: "Problem reps", status: "Auto" },
-          { block: "Fri 2–3 PM", focus: "Concept map review", status: "Open" },
+          { block: "Mon 3 to 4 PM", focus: "Past exams", status: "Scheduled" },
+          { block: "Wed 9 to 11 AM", focus: "Problem reps", status: "Auto" },
+          { block: "Fri 2 to 3 PM", focus: "Concept map review", status: "Open" },
         ];
         return (
           <>
@@ -1981,9 +2005,9 @@ function App() {
     if (persona === "professional") {
       if (selectedFile.id === "meeting") {
         const actionItems = [
-          "Finalize CX rollout brief — Maya · Tue",
-          "Update onboarding decks — Leo · Thu",
-          "Share retention spike analysis — Priya · Fri",
+          "Finalize CX rollout brief · Maya · Tue",
+          "Update onboarding decks · Leo · Thu",
+          "Share retention spike analysis · Priya · Fri",
         ];
         return (
           <>
@@ -2039,7 +2063,7 @@ function App() {
             <div className="section-card hero">
               <h4>Auto-Generated Dashboards & Briefs</h4>
               <p>
-                Google Slides decks become executive briefs automatically —
+                Google Slides decks become executive briefs automatically.
                 Sheets KPIs, Slides visuals, and Gmail-ready talking points.
               </p>
               <ul>
@@ -2055,7 +2079,7 @@ function App() {
             <div className="section-card">
               <h4>Proactive Risk & Deadline Alerts</h4>
               <div className="proactive-banner">
-                Deadline in 3 days — should I draft a status brief?
+                Deadline in 3 days. Should I draft a status brief?
               </div>
               <p>Companion spots risks across Drive the moment they appear.</p>
               <ul>
@@ -2070,16 +2094,16 @@ function App() {
       if (selectedFile.id === "calendar") {
         const focusBlocks = [
           {
-            slot: "3–4 PM",
+            slot: "3 to 4 PM",
             note: "Protected focus block",
             status: "Recommended",
           },
           {
-            slot: "4–4:30 PM",
+            slot: "4 to 4:30 PM",
             note: "Buffer before Vendor review",
             status: "Auto",
           },
-          { slot: "5–5:30 PM", note: "Walk + audio recap", status: "Optional" },
+          { slot: "5 to 5:30 PM", note: "Walk + audio recap", status: "Optional" },
         ];
         return (
           <>
@@ -2087,7 +2111,7 @@ function App() {
               <h4>Work Rhythm Optimiser</h4>
               <p>
                 Google Sheets workload + Calendar density combine to spot
-                overload instantly — Companion proposes focus blocks for you.
+                overload instantly. Companion proposes focus blocks for you.
               </p>
               <div className="assignment-grid">
                 {focusBlocks.map((focus) => (
@@ -2109,7 +2133,7 @@ function App() {
               <ul>
                 <li>Commutes and context switching flagged automatically.</li>
                 <li>Suggestions surface before burnout hits.</li>
-                <li>“Your schedule looks packed — want help rebalancing?”</li>
+                <li>“Your schedule looks packed. Want help rebalancing?”</li>
               </ul>
             </div>
           </>
@@ -2726,8 +2750,8 @@ function App() {
               </div>
               <div className="proactive-banner">
                 {persona === "student"
-                  ? "Upcoming exam kept in view — no cramming surprises."
-                  : "Schedule overload detected — focus block ready to insert."}
+                  ? "Upcoming exam kept in view. No cramming surprises."
+                  : "Schedule overload detected. Focus block ready to insert."}
               </div>
               <div className="companion-preview-body">
                 {renderCompanionScenario()}
@@ -2757,7 +2781,7 @@ function App() {
               <div>
                 <h4>Calendar sync</h4>
                 <p>
-                  Live Google Calendar preview — Companion keeps it in sync.
+                  Live Google Calendar preview. Companion keeps it in sync.
                 </p>
               </div>
               <button type="button" className="ghost">
@@ -2876,7 +2900,7 @@ function App() {
         <div className="voice-modal">
           <div className="voice-modal-content">
             <h3>🎤 Voice Mode</h3>
-            <p>Coming soon — simulated voice command.</p>
+            <p>Coming soon. Simulated voice command.</p>
             <p>
               “Hey Companion, scan today’s uploads and prep the Week 4
               flashcards.”
@@ -3307,11 +3331,11 @@ const FileDocPage = () => {
         },
         {
           role: "user",
-          text: "Explain why Gradient Risk connects to Input Layer — I need the rationale.",
+        text: "Explain why Gradient Risk connects to Input Layer. I need the rationale.",
         },
         {
           role: "agent",
-          text: "Gradient Risk inherits the Input Layer audio node plus Figure 4.7 annotations — citing pp.14-18 ties the concepts together. Want me to draft that summary?",
+        text: "Gradient Risk inherits the Input Layer audio node plus Figure 4.7 annotations. Citing pages 14 to 18 ties the concepts together. Want me to draft that summary?",
         },
         {
           role: "user",
@@ -3343,7 +3367,7 @@ const FileDocPage = () => {
         },
         {
           role: "user",
-          text: "Move the Thursday reflection block later—I’ve got lab hours then.",
+          text: "Move the Thursday reflection block later. I’ve got lab hours then.",
         },
         {
           role: "agent",
@@ -3364,7 +3388,7 @@ const FileDocPage = () => {
       },
       {
         role: "agent",
-        text: "Snippet is ready. I can drop it into Gmail or append it to Slides — just say the word.",
+        text: "Snippet is ready. I can drop it into Gmail or append it to Slides. Just say the word.",
       },
     ];
   };
@@ -4270,7 +4294,7 @@ const FileDocPage = () => {
             <div className="email-draft-field">
               <label>Subject</label>
               <input
-                value="[CX Sync] Summary + actions — ready to send"
+                value="[CX Sync] Summary + actions · ready to send"
                 readOnly
               />
             </div>
@@ -4278,28 +4302,28 @@ const FileDocPage = () => {
               <p>Hi team,</p>
               <p>
                 <strong>Highlights</strong>
-                <br />• <strong>Volume −8% WoW</strong> — conversion drag traced
+                <br />• <strong>Volume −8% WoW</strong> · conversion drag traced
                 to EU onboarding backlog; mitigation brief for CS leadership
                 attached (“Volume Recovery Plan v2”).
-                <br />• <strong>EU beta remains green</strong> — next go/no-go
+                <br />• <strong>EU beta remains green</strong> · next go/no-go
                 checkpoint Thu · 3:00 PM (calendar hold staged; Slides recap
                 ready).
-                <br />• <strong>Onboarding SLA risk</strong> — CX Ops requested
+                <br />• <strong>Onboarding SLA risk</strong> · CX Ops requested
                 an escalation summary following today’s sync.
               </p>
               <p>
                 <strong>Risk / Actions</strong>
-                <br />• SLA breach on onboarding — <strong>Maya S.</strong> owns
+                <br />• SLA breach on onboarding · <strong>Maya S.</strong> owns
                 follow-up (<em>due Tue</em>). Companion pre-tagged Tasks, linked
                 the CX Sync doc, and drafted the vendor update.
-                <br />• <strong>Volume recovery KPIs</strong> —{" "}
+                <br />• <strong>Volume recovery KPIs</strong> ·{" "}
                 <strong>Leo</strong>
                 publishes tomorrow’s dashboard; KPI snapshot + Slides deck ready
                 if you’d like them attached.
                 <br />• Need me to bundle the Slides recap or KPI sheet before
                 we hit send?
               </p>
-              <p>– Companion</p>
+              <p>• Companion</p>
             </div>
             <div className="email-draft-actions">
               <button type="button" className="primary">

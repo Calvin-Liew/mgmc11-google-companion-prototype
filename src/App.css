@@ -4375,13 +4375,40 @@
 .tour-compact-actions {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.tour-primary-actions,
+.tour-secondary-actions {
+  display: flex;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
 }
 
+.tour-secondary-actions {
+  margin-left: auto;
+}
+
 .tour-collapse-btn {
   border-radius: 999px;
+}
+
+.tour-exit-btn {
+  border: 1px solid rgba(234, 67, 53, 0.35);
+  background: rgba(234, 67, 53, 0.08);
+  color: #c62828;
+  border-radius: 999px;
+  padding: 6px 18px;
+  font-weight: 600;
+}
+
+.tour-exit-btn:hover {
+  border-color: rgba(234, 67, 53, 0.55);
+  background: rgba(234, 67, 53, 0.15);
 }
 
 .tour-track {
@@ -4456,6 +4483,13 @@
   border-color: #1a73e8;
   box-shadow: 0 10px 24px rgba(26, 115, 232, 0.18);
   transform: translateY(-2px);
+}
+
+.tour-chip-card.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 .tour-chip-pill {
@@ -4727,10 +4761,14 @@
     align-items: flex-start;
     gap: 10px;
   }
-  .tour-compact-actions {
+  .tour-compact-actions,
+  .tour-primary-actions,
+  .tour-secondary-actions {
     width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
+  }
+  .tour-secondary-actions {
+    justify-content: flex-start;
+    margin-left: 0;
   }
   .chat-suggestions-row {
     flex-direction: column;
