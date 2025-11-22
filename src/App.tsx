@@ -2166,25 +2166,40 @@ function App() {
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
           >
-            <div className="recent-icon">{file.icon}</div>
             <div className="recent-body">
-              <div className="recent-header">
-                <div className="recent-title">
-                  <strong>{file.name}</strong>
-                  <span className="recent-folder">{file.folder}</span>
+              <div className="recent-content">
+                <div className="recent-header">
+                  <div className="recent-title">
+                    <strong>{file.name}</strong>
+                    <span className="recent-folder">{file.folder}</span>
+                  </div>
+                  <span className="recent-tag">{file.app}</span>
                 </div>
-                <span className="recent-tag">{file.app}</span>
+                <p className="recent-description">{file.description}</p>
               </div>
-              <p className="recent-description">{file.description}</p>
-              <div className="recent-meta">
-                <span>📁 {file.folder}</span>
-                <span>👤 {file.owner}</span>
-                <span>📅 {file.modified}</span>
-                <span>⬇️ {file.size}</span>
-              </div>
-              <div className="recent-status">
-                <span>{file.tag}</span>
-                <strong>{file.status}</strong>
+              <div className="recent-footer">
+                <div className="recent-meta">
+                    <span>
+                      <small className="recent-meta-label">Folder</small>
+                      <span className="recent-meta-value">{file.folder}</span>
+                    </span>
+                    <span>
+                      <small className="recent-meta-label">Owner</small>
+                      <span className="recent-meta-value">{file.owner}</span>
+                    </span>
+                    <span>
+                      <small className="recent-meta-label">Updated</small>
+                      <span className="recent-meta-value">{file.modified}</span>
+                    </span>
+                    <span>
+                      <small className="recent-meta-label">Size</small>
+                      <span className="recent-meta-value">{file.size}</span>
+                    </span>
+                </div>
+                <div className="recent-status">
+                  <span>{file.tag}</span>
+                  <strong>{file.status}</strong>
+                </div>
               </div>
             </div>
           </Link>
@@ -2730,7 +2745,7 @@ function App() {
                     <div className="file-status-row">
                       <span>{file.status}</span>
                       <Link className="text-link" to={`/doc/${file.id}`}>
-                        Open doc
+                        Open companion preview
                       </Link>
                     </div>
                   </div>
