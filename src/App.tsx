@@ -1100,8 +1100,8 @@ const calendarThreadSeed: CalendarChatMessage[] = [
     author: "Companion",
     stamp: "07:45 AM",
     tag: "Reschedule",
-    text: "Done. Vendor Ops accepted 2:15 to 2:45 PM; I posted the update and attached the exec brief.",
-    detail: "Travel buffer recalculated. Want me to notify Maya?",
+          text: "Done. Vendor Ops accepted 2:15 to 2:45 PM; I posted the update and attached the executive brief.",
+          detail: "Travel buffer recalculated. Want me to notify Maya?",
     action: "Notify Maya",
   },
   {
@@ -1653,6 +1653,14 @@ function App() {
       {
         role: "agent",
         text: "Already queued. Highlights and risk actions are staged in the Customer Experience draft—just say the word and I’ll send it.",
+      },
+      {
+        role: "user",
+        text: "Before that, remind me which files Companion has live right now for ops.",
+      },
+      {
+        role: "agent",
+        text: "Customer Experience Sync notes, Vendor KPIs deck, and Calendar Pulse are all hot. Want me to open one or pull a summary?",
       },
     ],
   });
