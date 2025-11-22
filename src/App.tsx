@@ -513,7 +513,7 @@ const driveFiles: Record<Persona, DriveFile[]> = {
   professional: [
     {
       id: "meeting",
-      name: "CX Sync",
+      name: "Customer Experience Sync",
       type: "Google Docs",
       app: "Docs",
       icon: "Doc",
@@ -711,8 +711,8 @@ const cannedGlobalResponses: CannedResponse[] = [
     triggers: ["meeting recap", "cx sync", "chief of staff"],
     persona: "professional",
     fileId: "meeting",
-    text: "Doc CX Sync Doc is ready. Summary, decisions, and owners are staged. Should I drop the Gmail recap in drafts?",
-    linkLabel: "Review CX Sync Doc",
+    text: "Customer Experience Sync doc is ready. Summary, decisions, and owners are staged. Should I drop the Gmail recap in drafts?",
+    linkLabel: "Review Customer Experience Sync doc",
     linkTo: "/doc/meeting",
   },
   {
@@ -923,7 +923,7 @@ const dashboardStats: Record<Persona, StatCard[]> = {
       id: "stat-actions",
       label: "Action items tracked",
       value: "12 tasks",
-      helper: "Across CX + vendors",
+      helper: "Across Customer Experience + vendor workstreams",
       trend: "5 due this week",
       accent: "purple",
     },
@@ -1011,7 +1011,7 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
       id: "cal-4",
       day: "Mon",
       time: "11:00 to 11:45 AM",
-      title: "CX Weekly Sync",
+      title: "Customer Experience Weekly Sync",
       meta: "Recap + actions drafted",
       status: "Summary ready",
       color: "blue",
@@ -1082,7 +1082,7 @@ const calendarThreadSeed: CalendarChatMessage[] = [
     author: "Companion",
     stamp: "07:42 AM",
     tag: "Auto hold",
-    text: "I protected 3:00 to 3:45 PM for deck polish since the CX deck is due at 5.",
+    text: "I protected 3:00 to 3:45 PM for deck polish since the Customer Experience deck is due at 5.",
     detail: "Invite list updated + Slides link pinned to the block.",
     action: "See hold",
   },
@@ -1344,7 +1344,7 @@ const documentCanvases: Record<string, DocumentCanvas> = {
     conceptMapLabel: "Open Slides map",
   },
   meeting: {
-    title: "CX Weekly Sync Notes",
+    title: "Customer Experience Weekly Sync Notes",
     subtitle: "AI Meeting Chief of Staff already packaged the recap.",
     status: "Summary + actions shared",
     sections: [
@@ -2058,7 +2058,7 @@ function App() {
       triggers: ["meeting", "recap", "email"],
       persona: "professional",
       response:
-        "Drafted the Gmail recap for CX Sync with decisions + owners attached. Should I send it?",
+        "Drafted the Gmail recap for the Customer Experience Sync with decisions + owners attached. Should I send it?",
     },
     {
       triggers: ["vendor", "brief", "kpi"],
@@ -2368,7 +2368,7 @@ function App() {
     if (persona === "professional") {
       if (selectedFile.id === "meeting") {
         const actionItems = [
-          "Finalize CX rollout brief · Maya · Tue",
+          "Finalize Customer Experience rollout brief · Maya · Tue",
           "Update onboarding decks · Leo · Thu",
           "Share retention spike analysis · Priya · Fri",
         ];
@@ -4888,7 +4888,7 @@ const FileDocPage = () => {
               </p>
               <ul>
                 <li>
-                  <strong>Volume −8% WoW.</strong> Conversion drag traced to the
+                  <strong>Volume -8% WoW.</strong> Conversion drag traced to the
                   EU onboarding backlog; mitigation brief for Customer Success
                   leadership attached (“Volume Recovery Plan v2”).
                 </li>
@@ -4898,7 +4898,7 @@ const FileDocPage = () => {
                   recap ready).
                 </li>
                 <li>
-                  <strong>Onboarding SLA risk.</strong> CX Operations requested
+                  <strong>Onboarding SLA risk.</strong> Customer Experience Operations requested
                   an escalation summary following today’s sync.
                 </li>
               </ul>
@@ -4907,12 +4907,12 @@ const FileDocPage = () => {
               </p>
               <ul>
                 <li>
-                  <strong>Maya S. — Onboarding SLA breach (due Tue):</strong>{" "}
+                  <strong>Maya S. - Onboarding SLA breach (due Tue):</strong>{" "}
                   Companion pre-tagged Tasks, linked the Customer Experience
                   Sync doc, and drafted the vendor update.
                 </li>
                 <li>
-                  <strong>Leo — Volume recovery KPIs:</strong> Publishes
+                  <strong>Leo - Volume recovery KPIs:</strong> Publishes
                   tomorrow’s dashboard; KPI snapshot and Slides deck can be
                   attached if needed.
                 </li>
