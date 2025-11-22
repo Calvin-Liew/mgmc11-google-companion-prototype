@@ -3827,7 +3827,45 @@ const FileDocPage = () => {
         },
         {
           role: "agent",
-          text: "Focus on Seminar Prompts → it still lacks Chen 2025 context. I can queue the flashcards and move a focus block on your calendar if you want.",
+          text: "Focus on Seminar Prompts because it still lacks Chen 2025 context. I can queue flashcards and move a focus block on your calendar if you want.",
+        },
+      ];
+    }
+    if (file?.id === "reading") {
+      return [
+        {
+          role: "user",
+          text: "Skim the Chapter 4 attention primer for me. What’s the point in two sentences?",
+        },
+        {
+          role: "agent",
+          text: "Diaz 2024 frames attention like a probability distribution over token positions. Companion condensed the primer into a two-sentence brief pinned inside the doc.",
+          linkLabel: "Open attention primer",
+          linkTo: `/doc/${fileId}#chain`,
+        },
+        {
+          role: "user",
+          text: "Where does the textbook mention alpha_s? I need one citation for Lab 03.",
+        },
+        {
+          role: "agent",
+          text: "Pages 22-24 introduce α_s when discussing stability checks. I highlighted those paragraphs and added the cite callouts so you can drop them into the lab writeup.",
+        },
+        {
+          role: "user",
+          text: "Explain Gradient Risk vs Input Layer. I don’t want to misquote Figure 4.7.",
+        },
+        {
+          role: "agent",
+          text: "Gradient Risk spikes after seven iterations because of the normalized y-axis in Figure 4.7. I attached the caption Companion wrote so you can quote it verbatim.",
+        },
+        {
+          role: "user",
+          text: "Give me a 20-minute cram plan for this reading.",
+        },
+        {
+          role: "agent",
+          text: "Start with the concept map nodes for Seminar Prompts and Gradient Risk. I’ll queue flashcards + Slides snippets so you can rehearse without rereading the PDF.",
         },
       ];
     }
