@@ -1821,8 +1821,8 @@ function App() {
             <div className="tour-meta-label-row">
               <span className="tour-label">Companion tour</span>
               <span className="tour-label-note">
-                Interactive high-fidelity preview; limited scope, best fullscreen on
-                desktop.
+                Interactive high-fidelity preview; limited scope, best viewed on
+                a desktop or laptop.
               </span>
             </div>
             <strong>
