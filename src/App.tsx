@@ -1580,6 +1580,27 @@ const initialChat = (file?: DriveFile): ChatEntry[] => {
     return cs241CompanionChat;
   }
 
+  if (file?.id === "meeting") {
+    return [
+      {
+        role: "agent",
+        text: "Morning! Customer Experience Sync notes are still open. Want the recap, risks, or KPIs bundled first?",
+      },
+      {
+        role: "user",
+        text: "Start with the risk summary. I need to brief Maya before noon.",
+      },
+      {
+        role: "agent",
+        text: "Done. I highlighted the onboarding SLA breach paragraphs and attached the mitigation brief so Maya can act on it.",
+      },
+      {
+        role: "user",
+        text: "Great—can you prep an email draft for leadership once the bullets look good?",
+      },
+    ];
+  }
+
   return [
     {
       role: "agent",
@@ -1615,7 +1636,23 @@ function App() {
     professional: [
       {
         role: "agent",
-        text: "Hey! I’m watching Drive + Calendar for ops. Need Slides briefs, Gmail recaps, or Sheets KPIs?",
+        text: "Hey! I’m watching Drive + Calendar for ops. Need a Slides brief, Gmail recap, or Sheets KPIs?",
+      },
+      {
+        role: "user",
+        text: "Give me a quick status on volume recovery before I head into the Customer Experience sync.",
+      },
+      {
+        role: "agent",
+        text: "Volume is down 8% week over week, tied to the EU onboarding backlog. I drafted talking points plus the mitigation brief if you want them attached.",
+      },
+      {
+        role: "user",
+        text: "Perfect. Can you also prep the Gmail draft in case leadership asks for a recap?",
+      },
+      {
+        role: "agent",
+        text: "Already queued. Highlights and risk actions are staged in the Customer Experience draft—just say the word and I’ll send it.",
       },
     ],
   });
