@@ -90,7 +90,8 @@ type DocFlashcard = {
 
 type ChatEntry = {
   role: "agent" | "user";
-  text: string;
+  text?: string;
+  richText?: ReactNode;
   linkLabel?: string;
   linkTo?: string;
 };
@@ -737,7 +738,7 @@ const demoSteps: DemoStep[] = [
     persona: "student",
     fileId: "syllabus",
     title: "Syllabus-to-Schedule Pack",
-    subtitle: "Turn course outlines into a living study plan.",
+    subtitle: "Turns course syllabi into weekly, auto-updated study paths.",
     highlights: [
       "Auto-populates deadlines into Calendar.",
       "Drive folders organised week by week.",
@@ -750,7 +751,7 @@ const demoSteps: DemoStep[] = [
     persona: "student",
     fileId: "reading",
     title: "Smart Reading Pack",
-    subtitle: "Condense a 60-page PDF into shareable study pieces.",
+    subtitle: "Condenses long readings into slides, flashcards, and briefs.",
     highlights: [
       "One-page summary card in seconds.",
       "Slides + flashcards ready in Sheets.",
@@ -763,7 +764,7 @@ const demoSteps: DemoStep[] = [
     persona: "student",
     fileId: "notes",
     title: "Living Concept Maps",
-    subtitle: "Link lectures, readings, and flashcards automatically.",
+    subtitle: "Links lectures, labs, and flashcards into one living map.",
     highlights: [
       "Auto-generated concept map overlays notes.",
       "Connected ideas stay synced across Drive.",
@@ -776,7 +777,7 @@ const demoSteps: DemoStep[] = [
     persona: "professional",
     fileId: "meeting",
     title: "AI Meeting Chief of Staff",
-    subtitle: "Captures discussions, decisions, and action items.",
+    subtitle: "Captures every meeting with decisions, owners, and recaps ready.",
     highlights: [
       "Exec summary + owners already drafted.",
       "Carry forward last quarter’s KPIs.",
@@ -789,7 +790,7 @@ const demoSteps: DemoStep[] = [
     persona: "professional",
     fileId: "vendor",
     title: "Executive Brief + Dashboards",
-    subtitle: "Auto-generated decks, KPIs, and risk alerts.",
+    subtitle: "Distills live data into executive decks, KPIs, and risk alerts.",
     highlights: [
       "Deadline-aware prompts flag risks early.",
       "Talking points packaged for leadership.",
@@ -802,7 +803,7 @@ const demoSteps: DemoStep[] = [
     persona: "professional",
     fileId: "calendar",
     title: "Proactive Rhythm Optimiser",
-    subtitle: "Protect focus time the second schedules overload.",
+    subtitle: "Protects scheduled focus time the moment calendars overload.",
     highlights: [
       "Overload alerts fire before burnout.",
       "Suggests focus blocks + async swaps.",
@@ -1196,7 +1197,7 @@ const documentCanvases: Record<string, DocumentCanvas> = {
       },
       {
         id: "figures",
-        heading: "Annotated figures + captions",
+        heading: "Annotated figures + captions overview",
         excerpt:
           "Figures 4.3, 4.7, and 4.9 render exactly like the book, but Companion layers caption cards explaining gradient spikes, axis normalisation, and phrases to reuse in reflections.",
         insight:
@@ -1205,7 +1206,7 @@ const documentCanvases: Record<string, DocumentCanvas> = {
       },
       {
         id: "discussion",
-        heading: "Seminar + chapter summary",
+        heading: "Seminar + chapter summary wrap",
         excerpt:
           "Pages 56‑60 close the chapter with the canonical summary, and Companion injects seminar prompts, Chen 2025 counter-arguments, and inline notes while keeping the textbook layout intact.",
         insight:
@@ -1234,7 +1235,7 @@ const documentCanvases: Record<string, DocumentCanvas> = {
         tag: "Lab setup",
         sectionId: "lab-map",
         prompt:
-          "Where does the textbook introduce α_s and why does Lab 03 care?",
+          "Where does the textbook introduce α_s and why does Lab 03 care when submitting the lab memo?",
         answer:
           "Pages 22-24 tie α_s to stability checks; Companion tags every mention so the lab rubric references are one click away.",
       },
@@ -1242,7 +1243,8 @@ const documentCanvases: Record<string, DocumentCanvas> = {
         id: "reading-fc-figure",
         tag: "Figure 4.7",
         sectionId: "figures",
-        prompt: "How should you describe the gradient spike in Figure 4.7?",
+        prompt:
+          "How should you describe the gradient spike in Figure 4.7 when you brief the team?",
         answer:
           "Note the collapse after seven iterations and the normalised y-axis; Companion’s caption suggests citing page 33 when writing reflections.",
       },
@@ -1251,7 +1253,7 @@ const documentCanvases: Record<string, DocumentCanvas> = {
         tag: "Seminar",
         sectionId: "discussion",
         prompt:
-          "What counter-argument does Chen 2025 raise in the chapter wrap?",
+          "What counter-argument does Chen 2025 raise in the chapter wrap when the seminar pushes back?",
         answer:
           "Chen says the uplift is dataset-specific; Companion attaches that citation plus a follow-up question about regularisation strength.",
       },
@@ -1463,18 +1465,118 @@ const documentCanvases: Record<string, DocumentCanvas> = {
   },
 };
 
+const cs241CompanionChat: ChatEntry[] = [
+  {
+    role: "agent",
+    richText: (
+      <div className="chat-rich">
+        <p className="chat-rich-label">CS 241 workspace</p>
+        <p className="chat-rich-xl">
+          I pulled every CS 241 requirement into one workspace so Docs, Sheets,
+          and Slides share context.
+        </p>
+        <p className="chat-rich-small">
+          Calendar holds, Tasks, and Drive folders are already linked. Ask me to
+          adjust cadence, grading, or push updates.
+        </p>
+      </div>
+    ),
+  },
+  {
+    role: "user",
+    text: "Amazing. Can you walk me through the weekly cadence you set up?",
+  },
+  {
+    role: "agent",
+    richText: (
+      <div className="chat-rich">
+        <p className="chat-rich-title">Weekly cadence preview</p>
+        <ul className="chat-rich-list">
+          <li>
+            <strong>Week 1</strong> Fundamentals review with three labs queued
+            on Tuesday.
+          </li>
+          <li>
+            <strong>Week 2</strong> Lab checkoffs plus partner project pitch
+            rehearsal on Thursday.
+          </li>
+          <li>
+            <strong>Week 3</strong> Systems sprint with midterm warmup tasks
+            highlighted.
+          </li>
+        </ul>
+        <p className="chat-rich-small">
+          I can lighten or intensify any block and push the refresh to Calendar
+          once you confirm.
+        </p>
+      </div>
+    ),
+  },
+  {
+    role: "user",
+    text: "Looks good. How are you tracking grading coverage across assignments?",
+  },
+  {
+    role: "agent",
+    richText: (
+      <div className="chat-rich">
+        <p className="chat-rich-title">Grading coverage</p>
+        <div className="chat-rich-metric-row">
+          <div className="chat-rich-metric">
+            <strong>40%</strong>
+            <span>Labs auto rubric</span>
+          </div>
+          <div className="chat-rich-metric">
+            <strong>35%</strong>
+            <span>Project checkpoints</span>
+          </div>
+          <div className="chat-rich-metric">
+            <strong>25%</strong>
+            <span>Exam briefs</span>
+          </div>
+        </div>
+        <p className="chat-rich-small">
+          Rubric notes stay in Sheets and I can push a Slides recap for
+          instructors whenever you ask.
+        </p>
+      </div>
+    ),
+  },
+  {
+    role: "user",
+    text: "Any risk flags or calendar holds I should know about right now?",
+  },
+  {
+    role: "agent",
+    richText: (
+      <div className="chat-rich">
+        <p className="chat-rich-title">Calendar and risk watch</p>
+        <p className="chat-rich-lede">
+          Two holds already exist: Tuesday 9 AM lab prep and Friday 2 PM focus
+          block.
+        </p>
+        <ul className="chat-rich-list">
+          <li>
+            <strong>Backlog alert</strong> Lab 02 reflection trending 18 hours
+            late for three students.
+          </li>
+          <li>
+            <strong>Support</strong> Vendor tutoring slot open Thursday 3 PM if
+            you want it auto booked.
+          </li>
+        </ul>
+        <p className="chat-rich-small">
+          Say the word and I will rebalance workload and post the update to
+          Calendar and Tasks.
+        </p>
+      </div>
+    ),
+  },
+];
+
 const initialChat = (file?: DriveFile): ChatEntry[] => {
   if (file?.id === "syllabus") {
-    return [
-      {
-        role: "agent",
-        text: "I pulled every CS 241 requirement into one course workspace. Need the weekly cadence or grading plan?",
-      },
-      {
-        role: "agent",
-    text: "Calendar holds, Tasks, and Drive folders are already linked. Just tell me what to adjust.",
-      },
-    ];
+    return cs241CompanionChat;
   }
 
   return [
@@ -1550,18 +1652,25 @@ function App() {
     if (!selectedFile) return;
     const fileSwitchText =
       selectedFile.id === "syllabus"
-      ? "Refreshing the CS 241 plan. Ask me to tweak the cadence, grading focus, or push updates to Calendar."
+        ? "Refreshing the CS 241 plan. Ask me to tweak the cadence, grading focus, or push updates to Calendar."
         : `Switched focus to ${selectedFile.name}. Ask me to open it in ${selectedFile.type}, sync it to Calendar, or prep a recap.`;
-    setChatHistory((prev) => ({
-      ...prev,
-      [persona]: [
-        ...prev[persona],
-        {
-          role: "agent",
-          text: fileSwitchText,
-        },
-      ],
-    }));
+    setChatHistory((prev) => {
+      const personaHistory = prev[persona];
+      const lastEntry = personaHistory[personaHistory.length - 1];
+      if (lastEntry?.text === fileSwitchText) {
+        return prev;
+      }
+      return {
+        ...prev,
+        [persona]: [
+          ...personaHistory,
+          {
+            role: "agent",
+            text: fileSwitchText,
+          },
+        ],
+      };
+    });
   }, [selectedFile, persona]);
 
   useEffect(() => {
@@ -1709,7 +1818,13 @@ function App() {
       >
         <div className="tour-compact">
           <div className="tour-compact-meta">
-            <span>Companion tour</span>
+            <div className="tour-meta-label-row">
+              <span className="tour-label">Companion tour</span>
+              <span className="tour-label-note">
+                Interactive high-fidelity preview; limited scope, best fullscreen on
+                desktop.
+              </span>
+            </div>
             <strong>
               {guidedStep?.title ?? "Jump between signature scenarios"}
             </strong>
@@ -2727,7 +2842,9 @@ function App() {
             key={`${entry.role}-${index}`}
             className={`chat-bubble ${entry.role}`}
           >
-            <span>{entry.text}</span>
+            <div className="chat-content">
+              {entry.richText ?? <span>{entry.text ?? ""}</span>}
+            </div>
             {entry.linkTo && (
               <Link className="chat-link" to={entry.linkTo}>
                 {entry.linkLabel ?? "Open"}
@@ -3262,12 +3379,19 @@ function App() {
       </section>
       <div className="companion-meta-row">
         <div className="companion-meta">
-          <span>Folder: {personaConfig[persona].folder}</span>
-          <span>
-            Focus: {selectedFile ? selectedFile.name : "Recent Drive files"}
-          </span>
+          <div className="companion-meta-pill">
+            <span className="companion-meta-label">Folder</span>
+            <strong>{personaConfig[persona].folder}</strong>
+          </div>
+          <div className="companion-meta-pill">
+            <span className="companion-meta-label">Focus</span>
+            <strong>
+              {selectedFile ? selectedFile.name : "Recent Drive files"}
+            </strong>
+          </div>
         </div>
         <span className="companion-meta-status">
+          <span className="status-dot" aria-hidden="true" />
           {personaConfig[persona].status}
         </span>
       </div>
@@ -3281,10 +3405,16 @@ function App() {
             <span>{filesForPersona.length} linked files</span>
           </div>
           <div className="chat-meta">
-            <span>Folder: {personaConfig[persona].folder}</span>
-            <span>
-              Focus: {selectedFile ? selectedFile.name : "Recent Drive files"}
-            </span>
+            <div className="chat-meta-item">
+              <span className="chat-meta-label">Folder</span>
+              <strong>{personaConfig[persona].folder}</strong>
+            </div>
+            <div className="chat-meta-item">
+              <span className="chat-meta-label">Focus</span>
+              <strong>
+                {selectedFile ? selectedFile.name : "Recent Drive files"}
+              </strong>
+            </div>
           </div>
           <div className="chat-stack large">
             <div className="chat-feed">
@@ -3293,7 +3423,9 @@ function App() {
                   key={`central-${entry.role}-${index}`}
                   className={`chat-bubble ${entry.role}`}
                 >
-                  <span>{entry.text}</span>
+              <div className="chat-content">
+                {entry.richText ?? <span>{entry.text ?? ""}</span>}
+              </div>
                   {entry.linkTo && (
                     <Link className="chat-link" to={entry.linkTo}>
                       {entry.linkLabel ?? "Open"}
@@ -3324,6 +3456,25 @@ function App() {
                   {entry.linkLabel ?? entry.triggers[0]}
                 </button>
               ))}
+          </div>
+          <div className="chat-context-grid">
+            <article className="chat-context-card">
+              <span className="chat-context-chip">Workspace</span>
+              <h5>{personaConfig[persona].folder}</h5>
+              <p>{personaConfig[persona].narrative}</p>
+              <small>{personaConfig[persona].status}</small>
+            </article>
+            <article className="chat-context-card highlight">
+              <span className="chat-context-chip">
+                {selectedFile?.app ?? "Docs"}
+              </span>
+              <h5>{selectedFile?.name ?? "Pick a file to focus"}</h5>
+              <p>
+                {selectedFile?.description ??
+                  "Choose any doc to see Companion stage inline annotations, recaps, and automations here."}
+              </p>
+              <small>{selectedFile?.status ?? "Standing by"}</small>
+            </article>
           </div>
         </section>
         <div className="companion-intel-stack">
@@ -3387,9 +3538,12 @@ function App() {
                       setDocCanvasOpen(false);
                     }}
                   >
-                    {file.icon} {file.name}
+                    <span className="quick-switch-icon" aria-hidden="true">
+                      {renderGlyph(file.icon)}
+                    </span>
+                    <span className="quick-switch-label">{file.name}</span>
                   </button>
-                  <span>{file.status}</span>
+                  <span className="quick-switch-status">{file.status}</span>
                 </li>
               ))}
             </ul>
@@ -3413,11 +3567,13 @@ function App() {
                   </div>
                   <div className="suggestion-body">
                     <div className="suggestion-icon" aria-hidden="true">
-                      {tip.tone === "alert"
-                        ? "[Alert]"
-                        : tip.tone === "plan"
-                        ? "[Insight]"
-                        : "Bell"}
+                      {renderGlyph(
+                        tip.tone === "alert"
+                          ? "Alert"
+                          : tip.tone === "plan"
+                          ? "Plan"
+                          : "Notify"
+                      )}
                     </div>
                     <div className="suggestion-content">
                       <p className="suggestion-message">{tip.message}</p>
@@ -3578,6 +3734,23 @@ const FileDocPage = () => {
   const { fileId } = useParams();
   const file = findDriveFile(fileId);
   const doc = documentCanvases[fileId || ""];
+  const conceptMapNodeCount = doc?.conceptMapNodes?.length ?? 0;
+  const conceptMapConnectionNames = doc?.conceptMapNodes
+    ? Array.from(
+        new Set(
+          doc.conceptMapNodes.flatMap((node) => node.connections ?? [])
+        )
+      )
+    : [];
+  const conceptMapConnectionCount = conceptMapConnectionNames.length;
+  const conceptMapChipNames = conceptMapConnectionNames.slice(0, 4);
+  const conceptMapChipOverflow =
+    conceptMapConnectionCount - conceptMapChipNames.length;
+  const conceptMapSampleNodes =
+    doc?.conceptMapNodes?.slice(0, 3).map((node) => ({
+      ...node,
+      previewConnections: node.connections.slice(0, 2),
+    })) ?? [];
   const filePersona: Persona = driveFiles.student.some(
     (item) => item.id === file?.id
   )
@@ -4048,7 +4221,7 @@ const FileDocPage = () => {
         <div className="doc-view-head">
           <div className="doc-head-left">
             <div className="doc-head-icon" aria-hidden="true">
-              {file.icon}
+              {renderGlyph(file.icon)}
             </div>
             <div>
               <span className="doc-head-app">{file.app}</span>
@@ -4087,6 +4260,111 @@ const FileDocPage = () => {
             <span className="doc-course-meta">Course: {doc.courseLabel}</span>
           ) : null}
         </div>
+        {file.id === "notes" && conceptMapNodeCount ? (
+          <section className="concept-map-banner">
+            <div className="concept-map-banner-copy">
+              <span className="concept-map-badge">Companion generated</span>
+              <div className="concept-map-banner-head">
+                <h3>Course-wide concept map control</h3>
+                <p>
+                  Companion fused lecture audio, lab rubrics, and reading packs
+                  into one answer-ready map. Ask about any node and it responds
+                  with citations across every linked document.
+                </p>
+              </div>
+              <div className="concept-map-pill-row">
+                <span className="concept-map-pill">
+                  <strong>{conceptMapNodeCount}</strong>
+                  <span>linked nodes</span>
+                </span>
+                <span className="concept-map-pill">
+                  <strong>{conceptMapConnectionCount}</strong>
+                  <span>cross-doc references</span>
+                </span>
+              </div>
+              <div className="concept-map-highlight-grid">
+                <article className="concept-map-highlight-card">
+                  <strong>All sources fused</strong>
+                  <p>
+                    Lecture audio, lab rubrics, and reading packs roll into one
+                    living doc so context never leaves Drive.
+                  </p>
+                </article>
+                <article className="concept-map-highlight-card">
+                  <strong>Answer-ready nodes</strong>
+                  <p>
+                    Ask “Explain Gradient Risk” and Companion cites every linked
+                    document, Slides branch, and flashcard in seconds.
+                  </p>
+                </article>
+                <article className="concept-map-highlight-card">
+                  <strong>Feeds other apps</strong>
+                  <p>
+                    Each node can push into Slides, Sheets, or Gmail recaps so
+                    the map powers every workflow downstream.
+                  </p>
+                </article>
+              </div>
+              {conceptMapChipNames.length ? (
+                <div className="concept-map-chip-row">
+                  {conceptMapChipNames.map((chip) => (
+                    <span key={`concept-chip-${chip}`} className="concept-map-chip">
+                      {chip}
+                    </span>
+                  ))}
+                  {conceptMapChipOverflow > 0 ? (
+                    <span className="concept-map-chip muted">
+                      +{conceptMapChipOverflow} more
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+            <div className="concept-map-banner-actions">
+              <div className="concept-map-mini-graph">
+                <span className="concept-map-mini-label">Sample nodes</span>
+                {conceptMapSampleNodes.map((node) => (
+                  <article
+                    key={`concept-mini-${node.id}`}
+                    className="concept-map-mini-node"
+                  >
+                    <div>
+                      <strong>{node.title}</strong>
+                      <p>{node.summary}</p>
+                    </div>
+                    {node.previewConnections.length ? (
+                      <small>
+                        {node.previewConnections.join(" • ")}
+                        {node.connections.length > node.previewConnections.length
+                          ? " +" + (node.connections.length - node.previewConnections.length)
+                          : ""}
+                      </small>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+              <p className="concept-map-banner-note">
+                Use when you need a briefing across sources or want Companion’s
+                map to feed Slides, Sheets, and Docs automatically.
+              </p>
+              <div className="concept-map-banner-links">
+                <Link className="concept-map-action fill" to={`/doc/${file.id}#map`}>
+                  Highlight nodes in doc
+                </Link>
+                {doc.conceptMapLink ? (
+                  <a
+                    className="concept-map-action outline"
+                    href={doc.conceptMapLink}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {doc.conceptMapLabel ?? "Open map"}
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          </section>
+        ) : null}
         {doc ? (
           <>
             <div className="doc-insights-rail">
