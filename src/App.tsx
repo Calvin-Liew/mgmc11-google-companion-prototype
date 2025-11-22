@@ -1,4 +1,11 @@
-import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type FormEvent,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Link,
   Route,
@@ -139,6 +146,246 @@ type UseCaseCard = {
   route: "/" | "/companion" | "/doc" | "/doc-preview";
 };
 
+const makeSvgIcon = (children: ReactNode) => (
+  <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+    {children}
+  </svg>
+);
+
+const iconLibrary: Record<string, () => JSX.Element> = {
+  Doc: () =>
+    makeSvgIcon(
+      <>
+        <path
+          fill="#E8F0FE"
+          d="M9 4h12l6 6v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"
+        />
+        <path fill="#AECBFA" d="M21 4v6h6" />
+        <rect x="11" y="14.5" width="10" height="2" rx="1" fill="#1A73E8" />
+        <rect
+          x="11"
+          y="19"
+          width="8"
+          height="2"
+          rx="1"
+          fill="#1A73E8"
+          opacity="0.7"
+        />
+      </>
+    ),
+  Reader: () =>
+    makeSvgIcon(
+      <>
+        <path
+          fill="#F3E8FF"
+          d="M9 4h12l6 6v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"
+        />
+        <path fill="#D4BCFF" d="M21 4v6h6" />
+        <rect x="11" y="13.5" width="10" height="2" rx="1" fill="#7C3AED" />
+        <rect
+          x="11"
+          y="18"
+          width="8"
+          height="2"
+          rx="1"
+          fill="#7C3AED"
+          opacity="0.7"
+        />
+        <rect
+          x="11"
+          y="22.5"
+          width="6"
+          height="2"
+          rx="1"
+          fill="#7C3AED"
+          opacity="0.5"
+        />
+      </>
+    ),
+  Notes: () =>
+    makeSvgIcon(
+      <>
+        <rect x="6" y="6" width="20" height="22" rx="3" fill="#E0F7FA" />
+        <rect
+          x="10"
+          y="11"
+          width="12"
+          height="2"
+          rx="1"
+          fill="#00838F"
+        />
+        <rect
+          x="10"
+          y="16"
+          width="10"
+          height="2"
+          rx="1"
+          fill="#00838F"
+          opacity="0.7"
+        />
+        <rect
+          x="10"
+          y="21"
+          width="8"
+          height="2"
+          rx="1"
+          fill="#00838F"
+          opacity="0.5"
+        />
+      </>
+    ),
+  Sheet: () =>
+    makeSvgIcon(
+      <>
+        <rect x="6" y="6" width="20" height="22" rx="3" fill="#E6F4EA" />
+        <path
+          fill="#34A853"
+          d="M9 12h14v2H9zm0 5h14v2H9zm0 5h14v2H9z"
+          opacity="0.7"
+        />
+        <path fill="#34A853" d="M14 9h2v18h-2z" opacity="0.6" />
+      </>
+    ),
+  Trend: () =>
+    makeSvgIcon(
+      <>
+        <rect x="6" y="6" width="20" height="22" rx="3" fill="#FFF7E0" />
+        <path
+          d="M10 21 15.5 15.5 19 18l5-5"
+          stroke="#F29900"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle cx="24" cy="13" r="1.5" fill="#F29900" />
+      </>
+    ),
+  Calendar: () =>
+    makeSvgIcon(
+      <>
+        <rect x="6" y="8" width="20" height="18" rx="3" fill="#ffffff" />
+        <path fill="#EA4335" d="M6 10h20v4H6z" />
+        <rect
+          x="10"
+          y="16"
+          width="4"
+          height="4"
+          rx="1"
+          fill="#1A73E8"
+        />
+        <rect
+          x="18"
+          y="16"
+          width="4"
+          height="4"
+          rx="1"
+          fill="#34A853"
+        />
+        <path
+          stroke="#5F6368"
+          strokeWidth="2"
+          strokeLinecap="round"
+          d="M12 8V5m8 3V5"
+        />
+      </>
+    ),
+  Focus: () =>
+    makeSvgIcon(
+      <>
+        <circle cx="16" cy="16" r="11" fill="#E4ECFF" />
+        <circle
+          cx="16"
+          cy="16"
+          r="7"
+          stroke="#1A73E8"
+          strokeWidth="2"
+          fill="none"
+        />
+        <circle cx="16" cy="16" r="3" fill="#1A73E8" />
+      </>
+    ),
+  Library: () =>
+    makeSvgIcon(
+      <>
+        <rect x="7" y="8" width="4" height="16" rx="1" fill="#1A73E8" />
+        <rect x="13" y="6" width="4" height="18" rx="1" fill="#34A853" />
+        <rect x="19" y="9" width="4" height="15" rx="1" fill="#F29900" />
+      </>
+    ),
+  Insight: () =>
+    makeSvgIcon(
+      <>
+        <path
+          d="M16 6c4 0 7 3 7 6.5 0 2.3-1.3 4.1-3 5.4V22a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4.1C10.3 16.6 9 14.8 9 12.5 9 9 12 6 16 6z"
+          fill="#FFF0C6"
+          stroke="#F29900"
+          strokeWidth="1.5"
+        />
+        <rect x="13" y="24" width="6" height="2" rx="1" fill="#F29900" />
+        <rect x="14" y="27" width="4" height="2" rx="1" fill="#F29900" />
+      </>
+    ),
+  Checklist: () =>
+    makeSvgIcon(
+      <>
+        <circle cx="16" cy="16" r="11" fill="#E6F4EA" />
+        <path
+          d="m12.5 16.5 2.5 3 5.5-6"
+          stroke="#188038"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </>
+    ),
+  Plan: () =>
+    makeSvgIcon(
+      <>
+        <circle cx="16" cy="16" r="11" fill="#F3E8FF" />
+        <path
+          d="m16 9 2.2 4.3 4.8.7-3.5 3.4.8 4.8-4.3-2.2-4.3 2.2.8-4.8-3.5-3.4 4.8-.7z"
+          fill="#7C3AED"
+        />
+      </>
+    ),
+  Alert: () =>
+    makeSvgIcon(
+      <>
+        <path
+          d="M16 7 27 25H5L16 7z"
+          fill="#FCE8E6"
+          stroke="#D93025"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        <rect x="15" y="13" width="2" height="7" rx="1" fill="#D93025" />
+        <rect x="15" y="22" width="2" height="2" rx="1" fill="#D93025" />
+      </>
+    ),
+  Notify: () =>
+    makeSvgIcon(
+      <>
+        <path
+          d="M22 21h-12c0-6 2-10 6-10s6 4 6 10z"
+          fill="#E8EBED"
+          stroke="#5F6368"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M14 24a2 2 0 0 0 4 0"
+          stroke="#5F6368"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </>
+    ),
+};
+
+const renderGlyph = (token: string) => {
+  const renderer = iconLibrary[token] ?? iconLibrary.Doc;
+  return renderer();
+};
+
 type ChatPromptChip = {
   label: string;
   prompt: string;
@@ -201,7 +448,7 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       name: "CS 241 Plan",
       type: "Google Docs",
       app: "Docs",
-      icon: "📄",
+      icon: "Doc",
       folder: "CS 241 · Launch kit",
       owner: "me",
       modified: "May 20",
@@ -217,7 +464,7 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       name: "Modern ML Systems · Chapter 4",
       type: "Google Docs",
       app: "Docs",
-      icon: "📖",
+      icon: "Reader",
       folder: "Readings",
       owner: "me",
       modified: "May 18",
@@ -233,7 +480,7 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       name: "Neural Net Notes",
       type: "Google Docs",
       app: "Docs",
-      icon: "📝",
+      icon: "Notes",
       folder: "Lecture capture",
       owner: "me",
       modified: "May 19",
@@ -249,7 +496,7 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       name: "Midterm Blueprint",
       type: "Google Sheets",
       app: "Sheets",
-      icon: "📊",
+      icon: "Sheet",
       folder: "Assessments",
       owner: "me",
       modified: "May 17",
@@ -267,7 +514,7 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       name: "CX Sync",
       type: "Google Docs",
       app: "Docs",
-      icon: "📄",
+      icon: "Doc",
       folder: "Meetings",
       owner: "me",
       modified: "Jun 3",
@@ -283,7 +530,7 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       name: "Vendor KPIs",
       type: "Google Slides",
       app: "Slides",
-      icon: "📈",
+      icon: "Trend",
       folder: "Reporting",
       owner: "me",
       modified: "May 30",
@@ -299,7 +546,7 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       name: "Calendar Pulse",
       type: "Google Sheets",
       app: "Sheets",
-      icon: "🗓️",
+      icon: "Calendar",
       folder: "Planning",
       owner: "me",
       modified: "Jun 2",
@@ -438,7 +685,7 @@ const cannedGlobalResponses: CannedResponse[] = [
     triggers: ["syllabus", "schedule", "cs 241"],
     persona: "student",
     fileId: "syllabus",
-    text: "📘 CS 241 Plan (Docs) is up. I can spin a Sheets tracker or share the Slides summary whenever you’re ready.",
+    text: "Doc CS 241 Plan (Docs) is up. I can spin a Sheets tracker or share the Slides summary whenever you’re ready.",
     linkLabel: "Jump to CS 241 Plan",
     linkTo: "/doc/syllabus",
   },
@@ -446,7 +693,7 @@ const cannedGlobalResponses: CannedResponse[] = [
     triggers: ["reading pack", "reader", "pdf"],
     persona: "student",
     fileId: "reading",
-    text: "📝 Smart Reading Pack already condensed the Modern ML Systems excerpt → 1-page Docs brief + Slides deck + Sheets flashcards.",
+    text: "Notes Smart Reading Pack already condensed the Modern ML Systems excerpt → 1-page Docs brief + Slides deck + Sheets flashcards.",
     linkLabel: "Open annotated reader",
     linkTo: "/doc/reading",
   },
@@ -454,7 +701,7 @@ const cannedGlobalResponses: CannedResponse[] = [
     triggers: ["concept map", "notes"],
     persona: "student",
     fileId: "notes",
-    text: "🧠 Neural Net Notes are linked to lecture audio. Want me to spotlight a risky branch in the Slides concept map?",
+    text: "Insight Neural Net Notes are linked to lecture audio. Want me to spotlight a risky branch in the Slides concept map?",
     linkLabel: "Open Living Map",
     linkTo: "/doc/notes",
   },
@@ -462,7 +709,7 @@ const cannedGlobalResponses: CannedResponse[] = [
     triggers: ["meeting recap", "cx sync", "chief of staff"],
     persona: "professional",
     fileId: "meeting",
-    text: "📄 CX Sync Doc is ready. Summary, decisions, and owners are staged. Should I drop the Gmail recap in drafts?",
+    text: "Doc CX Sync Doc is ready. Summary, decisions, and owners are staged. Should I drop the Gmail recap in drafts?",
     linkLabel: "Review CX Sync Doc",
     linkTo: "/doc/meeting",
   },
@@ -470,7 +717,7 @@ const cannedGlobalResponses: CannedResponse[] = [
     triggers: ["vendor", "executive brief", "dashboard"],
     persona: "professional",
     fileId: "vendor",
-    text: "📊 Vendor KPIs Slides became an exec brief with talking points + mitigation steps. Ready for leadership?",
+    text: "Sheet Vendor KPIs Slides became an exec brief with talking points + mitigation steps. Ready for leadership?",
     linkLabel: "Open Vendor KPIs",
     linkTo: "/doc/vendor",
   },
@@ -478,7 +725,7 @@ const cannedGlobalResponses: CannedResponse[] = [
     triggers: ["calendar", "focus block", "rhythm"],
     persona: "professional",
     fileId: "calendar",
-    text: "🗓️ Calendar Pulse flagged the overload. I can insert a focus block and ping the attendees automatically.",
+    text: "Calendar Calendar Pulse flagged the overload. I can insert a focus block and ping the attendees automatically.",
     linkLabel: "View Calendar Pulse",
     linkTo: "/doc/calendar",
   },
@@ -571,7 +818,7 @@ const useCaseHighlights: UseCaseCard[] = [
     title: "Syllabus-to-Schedule Pack",
     detail: "Auto study plan + calendar sync from a single PDF.",
     badge: "Student",
-    icon: "🎯",
+    icon: "Focus",
     persona: "student",
     fileId: "syllabus",
     demoStepId: "student-syllabus",
@@ -582,7 +829,7 @@ const useCaseHighlights: UseCaseCard[] = [
     title: "Smart Reading Pack",
     detail: "Summaries, slides, and flashcards in one click.",
     badge: "Student",
-    icon: "📚",
+    icon: "Library",
     persona: "student",
     fileId: "reading",
     demoStepId: "student-reading",
@@ -593,7 +840,7 @@ const useCaseHighlights: UseCaseCard[] = [
     title: "Living Concept Maps",
     detail: "Notes, readings, and labs stitched automatically.",
     badge: "Student",
-    icon: "🧠",
+    icon: "Insight",
     persona: "student",
     fileId: "notes",
     demoStepId: "student-notes",
@@ -604,7 +851,7 @@ const useCaseHighlights: UseCaseCard[] = [
     title: "AI Meeting Chief of Staff",
     detail: "Summaries, decisions, and action items pre-drafted.",
     badge: "Professional",
-    icon: "📋",
+    icon: "Checklist",
     persona: "professional",
     fileId: "meeting",
     demoStepId: "pro-meeting",
@@ -615,7 +862,7 @@ const useCaseHighlights: UseCaseCard[] = [
     title: "Executive Briefs",
     detail: "Slide decks distilled into leadership-ready briefs.",
     badge: "Professional",
-    icon: "📈",
+    icon: "Trend",
     persona: "professional",
     fileId: "vendor",
     demoStepId: "pro-vendor",
@@ -626,7 +873,7 @@ const useCaseHighlights: UseCaseCard[] = [
     title: "Work Rhythm Optimiser",
     detail: "Protect focus time before the calendar implodes.",
     badge: "Professional",
-    icon: "🗓️",
+    icon: "Calendar",
     persona: "professional",
     fileId: "calendar",
     demoStepId: "pro-proactive",
@@ -1440,7 +1687,7 @@ function App() {
               disabled={chipsDisabled}
             >
               <span className="tour-chip-pill">
-                {isStudent ? "🎓 Student" : "💼 Professional"}
+                {isStudent ? "Student Student" : "Pro Professional"}
               </span>
               <strong>{step.title}</strong>
               <small>{step.subtitle}</small>
@@ -2460,7 +2707,7 @@ function App() {
               </ul>
             </div>
             <div className="inline-voice">
-              <p>🎤 Ask Companion even in full screen.</p>
+              <p>Ask Companion even in full screen.</p>
               <button className="ghost" onClick={() => setVoiceModeOpen(true)}>
                 Ask about this doc
               </button>
@@ -2509,24 +2756,24 @@ function App() {
           <span>Drive Companion</span>
         </div>
         <div className="search-box">
-          <span>🔍</span>
+          <span className="search-label">Search</span>
           <input placeholder="Search in Drive" />
         </div>
         <div className="google-right">
-          <button className="icon-btn">?</button>
-          <button className="icon-btn">⚙️</button>
+          <button className="icon-btn">Help</button>
+          <button className="icon-btn">Settings</button>
           <div className="persona-toggle">
             <button
               className={persona === "student" ? "active" : ""}
               onClick={() => setPersona("student")}
             >
-              🎓
+              Student
             </button>
             <button
               className={persona === "professional" ? "active" : ""}
               onClick={() => setPersona("professional")}
             >
-              💼
+              Pro
             </button>
           </div>
           <div className="avatar">{persona === "student" ? "CL" : "VC"}</div>
@@ -2649,7 +2896,9 @@ function App() {
                   onClick={() => handleUseCaseClick(card)}
                 >
                   <div className="usecase-top">
-                    <span className="usecase-icon">{card.icon}</span>
+                    <span className="usecase-icon" aria-hidden="true">
+                      {renderGlyph(card.icon)}
+                    </span>
                     <span
                       className={`badge ${
                         card.persona === "student" ? "student" : "pro"
@@ -2720,7 +2969,9 @@ function App() {
                   >
                     <div className="file-card-head">
                       <div className="file-card-info">
-                        <div className="file-icon">{file.icon}</div>
+                        <div className="file-icon" aria-hidden="true">
+                          {renderGlyph(file.icon)}
+                        </div>
                         <div className="file-card-title">
                           <div className="file-card-title-row">
                             <strong>{file.name}</strong>
@@ -2737,10 +2988,22 @@ function App() {
                     </div>
                     <p className="file-description">{file.description}</p>
                     <div className="file-card-footer">
-                      <span>📁 {file.folder}</span>
-                      <span>👤 {file.owner}</span>
-                      <span>📅 {file.modified}</span>
-                      <span>⬇️ {file.size}</span>
+                      <span>
+                        <small className="file-footer-label">Folder</small>
+                        <span className="file-footer-value">{file.folder}</span>
+                      </span>
+                      <span>
+                        <small className="file-footer-label">Owner</small>
+                        <span className="file-footer-value">{file.owner}</span>
+                      </span>
+                      <span>
+                        <small className="file-footer-label">Updated</small>
+                        <span className="file-footer-value">{file.modified}</span>
+                      </span>
+                      <span>
+                        <small className="file-footer-label">Size</small>
+                        <span className="file-footer-value">{file.size}</span>
+                      </span>
                     </div>
                     <div className="file-status-row">
                       <span>{file.status}</span>
@@ -2874,12 +3137,17 @@ function App() {
                     <span className="suggestion-time">{tip.time}</span>
                   </div>
                   <div className="suggestion-body">
-                    <div className="suggestion-icon" aria-hidden="true">
-                      {tip.tone === "alert"
-                        ? "⚠️"
-                        : tip.tone === "plan"
-                        ? "✨"
-                        : "🔔"}
+                    <div
+                      className={`suggestion-icon ${tip.tone}`}
+                      aria-hidden="true"
+                    >
+                      {renderGlyph(
+                        tip.tone === "alert"
+                          ? "Alert"
+                          : tip.tone === "plan"
+                          ? "Plan"
+                          : "Notify"
+                      )}
                     </div>
                     <div className="suggestion-content">
                       <p className="suggestion-message">{tip.message}</p>
@@ -2902,7 +3170,8 @@ function App() {
       </div>
 
       <Link className="floating-chat" to="/companion">
-        💬 <span>Chat with Companion</span>
+        <span className="floating-chat-chip">Live</span>
+        <span>Chat with Companion</span>
       </Link>
 
       {docCanvasOpen && (
@@ -2914,7 +3183,7 @@ function App() {
       {voiceModeOpen && (
         <div className="voice-modal">
           <div className="voice-modal-content">
-            <h3>🎤 Voice Mode</h3>
+            <h3>Voice Mode</h3>
             <p>Coming soon. Simulated voice command.</p>
             <p>
               “Hey Companion, scan today’s uploads and prep the Week 4
@@ -2981,13 +3250,13 @@ function App() {
             className={persona === "student" ? "active" : ""}
             onClick={() => setPersona("student")}
           >
-            🎓 Student workspace
+            Student Student workspace
           </button>
           <button
             className={persona === "professional" ? "active" : ""}
             onClick={() => setPersona("professional")}
           >
-            💼 Professional workspace
+            Pro Professional workspace
           </button>
         </div>
       </section>
@@ -3145,10 +3414,10 @@ function App() {
                   <div className="suggestion-body">
                     <div className="suggestion-icon" aria-hidden="true">
                       {tip.tone === "alert"
-                        ? "⚠️"
+                        ? "[Alert]"
                         : tip.tone === "plan"
-                        ? "✨"
-                        : "🔔"}
+                        ? "[Insight]"
+                        : "Bell"}
                     </div>
                     <div className="suggestion-content">
                       <p className="suggestion-message">{tip.message}</p>
@@ -3376,7 +3645,7 @@ const FileDocPage = () => {
       return [
         {
           role: "agent",
-          text: "🗂️ I turned the CS 241 syllabus into one living plan and pinned every deadline to Calendar + Tasks.",
+          text: "Binder I turned the CS 241 syllabus into one living plan and pinned every deadline to Calendar + Tasks.",
           linkLabel: "Review schedule",
           linkTo: `/doc/${fileId}#cadence`,
         },
@@ -3393,7 +3662,7 @@ const FileDocPage = () => {
     return [
       {
         role: "agent",
-        text: "📊 Pulled KPIs + flagged the onboarding risk in this doc. Ready to slot into Slides?",
+        text: "Sheet Pulled KPIs + flagged the onboarding risk in this doc. Ready to slot into Slides?",
         linkLabel: "View KPI callout",
         linkTo: `/doc/${fileId}#kpi`,
       },
