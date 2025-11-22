@@ -4873,36 +4873,60 @@ const FileDocPage = () => {
             <div className="email-draft-field">
               <label>Subject</label>
               <input
-                value="[CX Sync] Summary + actions · ready to send"
+                value="[Customer Experience (CX) Sync] Summary + actions"
                 readOnly
               />
             </div>
             <div className="email-draft-body">
               <p>Hi team,</p>
               <p>
-                <strong>Highlights</strong>
-                <br />• <strong>Volume −8% WoW</strong> · conversion drag traced
-                to EU onboarding backlog; mitigation brief for CS leadership
-                attached (“Volume Recovery Plan v2”).
-                <br />• <strong>EU beta remains green</strong> · next go/no-go
-                checkpoint Thu · 3:00 PM (calendar hold staged; Slides recap
-                ready).
-                <br />• <strong>Onboarding SLA risk</strong> · CX Ops requested
-                an escalation summary following today’s sync.
+                Customer Experience (CX) sync recap below. Please review the key
+                highlights and owner assignments ahead of tomorrow’s follow-ups.
               </p>
               <p>
-                <strong>Risk / Actions</strong>
-                <br />• SLA breach on onboarding · <strong>Maya S.</strong> owns
-                follow-up (<em>due Tue</em>). Companion pre-tagged Tasks, linked
-                the CX Sync doc, and drafted the vendor update.
-                <br />• <strong>Volume recovery KPIs</strong> ·{" "}
-                <strong>Leo</strong>
-                publishes tomorrow’s dashboard; KPI snapshot + Slides deck ready
-                if you’d like them attached.
-                <br />• Need me to bundle the Slides recap or KPI sheet before
-                we hit send?
+                <strong>Highlights</strong>
               </p>
-              <p>• Companion</p>
+              <ul>
+                <li>
+                  <strong>Volume −8% WoW.</strong> Conversion drag traced to the
+                  EU onboarding backlog; mitigation brief for Customer Success
+                  leadership attached (“Volume Recovery Plan v2”).
+                </li>
+                <li>
+                  <strong>EU beta remains green.</strong> Next go/no-go
+                  checkpoint is Thu @ 3:00 PM (calendar hold staged; Slides
+                  recap ready).
+                </li>
+                <li>
+                  <strong>Onboarding SLA risk.</strong> CX Operations requested
+                  an escalation summary following today’s sync.
+                </li>
+              </ul>
+              <p>
+                <strong>Risks & actions</strong>
+              </p>
+              <ul>
+                <li>
+                  <strong>Maya S. — Onboarding SLA breach (due Tue):</strong>{" "}
+                  Companion pre-tagged Tasks, linked the Customer Experience
+                  Sync doc, and drafted the vendor update.
+                </li>
+                <li>
+                  <strong>Leo — Volume recovery KPIs:</strong> Publishes
+                  tomorrow’s dashboard; KPI snapshot and Slides deck can be
+                  attached if needed.
+                </li>
+                <li>
+                  <strong>Companion follow-up:</strong> Let me know if you’d
+                  like the Slides recap or KPI sheet bundled before we send the
+                  final note.
+                </li>
+              </ul>
+              <p className="email-signoff">
+                Thanks,
+                <br />
+                Companion
+              </p>
             </div>
             <div className="email-draft-actions">
               <button type="button" className="primary">
