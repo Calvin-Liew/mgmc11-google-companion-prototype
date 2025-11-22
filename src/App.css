@@ -160,12 +160,20 @@
   border-radius: 999px;
 }
 
-.search-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+.search-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff;
+  display: grid;
+  place-items: center;
   color: #5f6368;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.search-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 .search-box input {

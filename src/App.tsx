@@ -2873,7 +2873,23 @@ function App() {
           <span>Drive Companion</span>
         </div>
         <div className="search-box">
-          <span className="search-label">Search</span>
+          <span className="search-icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none">
+              <circle
+                cx="9"
+                cy="9"
+                r="5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <path
+                d="m12.5 12.5 4 4"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </span>
           <input placeholder="Search in Drive" />
         </div>
         <div className="google-right">
