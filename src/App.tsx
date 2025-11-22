@@ -48,12 +48,36 @@ type DocSection = {
   action: string;
 };
 
+type DocConceptNode = {
+  id: string;
+  title: string;
+  summary: string;
+  connections: string[];
+  status?: string;
+};
+
 type DocumentCanvas = {
   title: string;
   subtitle: string;
   status: string;
+  courseLabel?: string;
   sections: DocSection[];
   inlineTips: string[];
+  flashcards?: DocFlashcard[];
+  flashcardDeckLink?: string;
+  flashcardDeckLabel?: string;
+  conceptMapNarrative?: string;
+  conceptMapNodes?: DocConceptNode[];
+  conceptMapLink?: string;
+  conceptMapLabel?: string;
+};
+
+type DocFlashcard = {
+  id: string;
+  prompt: string;
+  answer: string;
+  tag?: string;
+  sectionId?: string;
 };
 
 type ChatEntry = {
@@ -81,13 +105,28 @@ type CalendarEntry = {
   location: string;
   startMinutes: number;
   endMinutes: number;
+  source?: "companion" | "manual";
 };
 
-type CalendarDayPreviewProps = {
+type CalendarWeekGalleryProps = {
   entries: CalendarEntry[];
+  size?: "small" | "large";
+};
+type CalendarDayTimelineProps = {
+  entries: CalendarEntry[];
+  dayLabel: string;
   startMinutes: number;
   endMinutes: number;
-  size?: "small" | "large";
+};
+type CalendarChatMessage = {
+  id: string;
+  role: "agent" | "user";
+  author: string;
+  stamp: string;
+  tag: string;
+  text: string;
+  detail?: string;
+  action?: string;
 };
 type UseCaseCard = {
   id: string;
@@ -134,7 +173,7 @@ const personaConfig: Record<
     status: "Linked to Calendar & Sheets",
     proactive:
       "Companion turned your syllabus into a 10-week plan the moment it hit Drive.",
-    folder: "LINB18 Notes",
+    folder: "CS 241 Workspace",
     chips: [
       "Explore these files",
       "Ask about this folder",
@@ -164,19 +203,19 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       type: "Google Docs",
       app: "Docs",
       icon: "📄",
-      folder: "Week zero",
+      folder: "CS 241 · Launch kit",
       owner: "me",
       modified: "May 20",
       size: "85 KB",
       meta: "Updated 10m ago · Prof. Diaz",
-      tag: "Outline",
-      description: "Course outcomes, deliverables, and grading breakdown.",
-      status: "Syllabus-to-Schedule Pack ready",
+      tag: "Syllabus plan",
+      description: "One syllabus, all deadlines, and automations in one doc.",
+      status: "Schedule pack ready",
       route: "/",
     },
     {
       id: "reading",
-      name: "Week 3 Reader",
+      name: "Modern ML Systems · Chapter 4",
       type: "Google Docs",
       app: "Docs",
       icon: "📖",
@@ -184,10 +223,10 @@ const driveFiles: Record<Persona, DriveFile[]> = {
       owner: "me",
       modified: "May 18",
       size: "2.1 MB",
-      meta: "Shared yesterday · 60 pages",
-      tag: "Reading pack",
-      description: "Condensed into a summary, slides, and flashcards.",
-      status: "Smart Reading Pack generated",
+      meta: "Shared yesterday · 60-page excerpt",
+      tag: "Textbook reader",
+      description: "Modern ML Systems Chapter 4 with Companion overlays.",
+      status: "Annotated reader ready",
       route: "/doc",
     },
     {
@@ -304,9 +343,9 @@ const getAppLaunchLabel = (file?: DriveFile) => {
 
 const fileHighlights: Record<string, string[]> = {
   syllabus: [
-    "10-week outline parsed into Drive folders by week.",
-    "Deadlines automatically synced to Google Calendar.",
-    "Study packs grouped by assignment weight.",
+    "One syllabus mapped to Drive folders, Tasks, and Calendar.",
+    "Deadlines sync with buffers and commute windows already set.",
+    "Study packs grouped by assignment weight with owner tags.",
   ],
   reading: [
     "Condensed the 60-page PDF into a one-page summary card.",
@@ -408,8 +447,8 @@ const cannedGlobalResponses: CannedResponse[] = [
     triggers: ["reading pack", "reader", "pdf"],
     persona: "student",
     fileId: "reading",
-    text: "📝 Smart Reading Pack already condensed the Week 3 Reader → 1-page Docs brief + Slides deck + Sheets flashcards.",
-    linkLabel: "Open Week 3 Reader",
+    text: "📝 Smart Reading Pack already condensed the Modern ML Systems excerpt → 1-page Docs brief + Slides deck + Sheets flashcards.",
+    linkLabel: "Open annotated reader",
     linkTo: "/doc/reading",
   },
   {
@@ -664,6 +703,33 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
       location: "Library · Quiet room",
       startMinutes: 15 * 60,
       endMinutes: 16 * 60,
+      source: "companion",
+    },
+    {
+      id: "cal-7",
+      day: "Mon",
+      time: "5:30 – 6:00 PM",
+      title: "Reflection buffer",
+      meta: "Companion logged journaling + review prompts.",
+      status: "AI hold",
+      color: "orange",
+      location: "Dorm · Desk",
+      startMinutes: 17 * 60 + 30,
+      endMinutes: 18 * 60,
+      source: "companion",
+    },
+    {
+      id: "cal-8",
+      day: "Mon",
+      time: "6:15 – 7:00 PM",
+      title: "Slides polish",
+      meta: "Auto pulled notes + figures to prep deck.",
+      status: "Auto reminder",
+      color: "blue",
+      location: "Drive workspace",
+      startMinutes: 18 * 60 + 15,
+      endMinutes: 19 * 60,
+      source: "companion",
     },
     {
       id: "cal-2",
@@ -676,6 +742,7 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
       location: "Engineering Lab",
       startMinutes: 9 * 60 + 30,
       endMinutes: 10 * 60 + 15,
+      source: "manual",
     },
     {
       id: "cal-3",
@@ -688,6 +755,7 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
       location: "Zoom · link ready",
       startMinutes: 13 * 60,
       endMinutes: 14 * 60,
+      source: "companion",
     },
   ],
   professional: [
@@ -702,6 +770,33 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
       location: "Meet · Conf Room C",
       startMinutes: 11 * 60,
       endMinutes: 11 * 60 + 45,
+      source: "manual",
+    },
+    {
+      id: "cal-9",
+      day: "Mon",
+      time: "12:10 – 12:30 PM",
+      title: "Commute buffer",
+      meta: "Traffic watch flagged shuttle delays.",
+      status: "AI hold",
+      color: "pink",
+      location: "HQ shuttle",
+      startMinutes: 12 * 60 + 10,
+      endMinutes: 12 * 60 + 30,
+      source: "companion",
+    },
+    {
+      id: "cal-10",
+      day: "Mon",
+      time: "1:00 – 1:30 PM",
+      title: "Deck review focus",
+      meta: "Doc notes + Slides links pinned automatically.",
+      status: "Focus block",
+      color: "green",
+      location: "Desk · War room",
+      startMinutes: 13 * 60,
+      endMinutes: 13 * 60 + 30,
+      source: "companion",
     },
     {
       id: "cal-5",
@@ -714,6 +809,7 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
       location: "Hangouts · Vendor Ops",
       startMinutes: 14 * 60 + 30,
       endMinutes: 15 * 60,
+      source: "manual",
     },
     {
       id: "cal-6",
@@ -726,149 +822,277 @@ const calendarEntries: Record<Persona, CalendarEntry[]> = {
       location: "Calendar hold",
       startMinutes: 16 * 60,
       endMinutes: 17 * 60,
+      source: "companion",
     },
   ],
 };
 
+const calendarThreadSeed: CalendarChatMessage[] = [
+  {
+    id: "calendar-msg-1",
+    role: "agent",
+    author: "Companion",
+    stamp: "07:42 AM",
+    tag: "Auto hold",
+    text: "I protected 3:00–3:45 PM for deck polish since the CX deck is due at 5.",
+    detail: "Invite list updated + Slides link pinned to the block.",
+    action: "See hold",
+  },
+  {
+    id: "calendar-msg-2",
+    role: "user",
+    author: "You",
+    stamp: "07:44 AM",
+    tag: "Reply",
+    text: "Can you move the vendor briefing earlier so I can keep that hold?",
+  },
+  {
+    id: "calendar-msg-3",
+    role: "agent",
+    author: "Companion",
+    stamp: "07:45 AM",
+    tag: "Reschedule",
+    text: "Done. Vendor Ops accepted 2:15–2:45 PM; I posted the update and attached the exec brief.",
+    detail: "Travel buffer recalculated. Want me to notify Maya?",
+    action: "Notify Maya",
+  },
+  {
+    id: "calendar-msg-4",
+    role: "agent",
+    author: "Companion",
+    stamp: "09:10 AM",
+    tag: "Buffer",
+    text: "Traffic is heavy between HQ and the robotics lab. I staged a 12 min shuttle hold before standup.",
+    detail: "Accept to keep the lab demo on time.",
+    action: "Accept buffer",
+  },
+];
+
 const documentCanvases: Record<string, DocumentCanvas> = {
   syllabus: {
     title: "CS 241 Syllabus – AI-assisted annotations",
-    subtitle: "Drive Companion layered your schedule directly on the doc.",
-    status: "Syllabus-to-Schedule Pack live",
+    subtitle:
+      "Companion aligned every requirement into one unified course plan.",
+    status: "Schedule pack live",
+    courseLabel: "CS 241 · Systems Programming",
     sections: [
       {
-        id: "week1",
-        heading: "Week 1 · Foundations + deliverables",
+        id: "kickoff",
+        heading: "Kickoff timeline",
         excerpt:
-          "Week 1 covers linear algebra refreshers, studio onboarding, and introduces the semester-long design sprint. Companion expanded every bullet into full paragraphs so faculty can drop in clarifying notes without losing the pacing. Deliverables, rubrics, and reading packs now live inline so the doc reads like the final PDF.",
+          "Orientation lectures, lab onboarding, and the first studio sync all happen in Week 1. Companion extracted every date from the PDF and turned them into a real plan so the course feels cohesive instead of a handout.",
         insight:
-          "Companion captured the sprint milestones, expanded them into trackable tasks, and built a Week 1 checklist in Tasks.",
-        action: "Ask Companion to pin this checklist inside Calendar + Todo.",
+          "Sprint milestones became an actionable checklist synced across Tasks and Calendar.",
+        action:
+          "Pin this checklist to the dashboard so everyone stays on pace.",
       },
       {
-        id: "week3",
-        heading: "Week 3 · Research translation",
+        id: "cadence",
+        heading: "Weekly cadence",
         excerpt:
-          "Readings and lab reflections are still due Thursday while the proposal pitch lands Monday. The doc now includes the full prompt, evaluation criteria, and side notes from last semester so students can contextualise expectations. Companion threads references back to Drive folders automatically so no citation gets lost.",
+          "Readings publish Sunday night, reflections are due Thursday, and studio deliverables ship Monday mornings. Companion mapped each stream to Drive folders so every artifact lives in one workspace.",
         insight:
-          "Study blocks already inserted on Tue/Thu evenings to prevent cramming.",
-        action: "Adjust tempo? Companion can slide the blocks if labs shift.",
+          "Study blocks already land on Tuesday + Thursday nights to match the reflection cadence.",
+        action:
+          "Need to shift when labs slip? Ask Companion to move the Tuesday block.",
       },
       {
         id: "grading",
-        heading: "Grading model",
+        heading: "Assessment plan",
         excerpt:
-          "Projects weigh 45%, labs 35%, exams 20%, and participation modifies the final mark by +/-3%. Companion added an expanded explanation of how resubmissions work plus an FAQ block for late days. The layout mirrors the registrar PDF so students can print without re-formatting.",
+          "Projects weigh 45%, labs 35%, exams 20%, participation ±3%. Companion pulled the rubric into this doc so weighting sits beside assignments instead of in an appendix.",
         insight:
-          "Drive Companion tagged each artifact with its weighting so reminders escalate appropriately.",
-        action: "Open dashboard to see how prep time stacks against weighting.",
+          "Each artifact now carries its weighting, letting reminders and nudges escalate appropriately.",
+        action:
+          "Open the dashboard to see how prep time tracks against weighting.",
       },
       {
-        id: "capstone",
-        heading: "Capstone scaffolding",
+        id: "automation",
+        heading: "Automation checklist",
         excerpt:
-          "Capstone scaffolding spans Weeks 8-12 with milestone reviews, narrative drafts, and mentor office hours. The doc now holds the full timeline, example briefs, and a checklist of cross-functional deliverables. Companion linked previous cohorts' winning decks so inspiration is one click away.",
+          "Capstone reviews, mentor meetings, and demo days already have folders, templates, and owner tags. Companion links each automation to the same CS 241 workspace so no one chases separate links.",
         insight:
-          "Companion mirrored the rubric and turned each milestone into an assignable task.",
+          "Every milestone was mirrored into Tasks and Calendar with ownership tags.",
         action:
-          "Invite teammates to this doc so ownership shows up in Drive activity.",
+          "Invite the teaching team so ownership shows up everywhere automatically.",
       },
     ],
     inlineTips: [
-      "Auto-populated calendar holds for every due date now include recommended buffer suggestions.",
-      "Weekly Drive folders spin up automatically with template Docs, Slides, and Sheets checklists.",
-      "Flashcards generate whenever a reading is attached, and the doc links directly to the Sheets deck.",
+      "Calendar holds include buffers for commute windows or travel days.",
+      "Weekly Drive folders ship with Docs and Slides templates attached.",
+      "Reading packets automatically trigger flashcard + Slides summaries.",
     ],
   },
   reading: {
-    title: "Week 3 Reader – Condensed by Companion",
-    subtitle: "Smart Reading Pack turned 60 pages into actionable pieces.",
+    title: "Modern ML Systems – Chapter 4 (Annotated)",
+    subtitle: "60-page textbook excerpt with Companion overlays and AI notes.",
     status: "Summary + flashcards ready",
     sections: [
       {
-        id: "thesis",
-        heading: "Core thesis",
+        id: "pages14",
+        heading: "Pages 14–18 · Attention primer",
         excerpt:
-          "Retrieval-tuned prompts outperform static outlines in attention tasks. Companion pulled the full abstract, supporting paragraphs, and footnotes so the doc reads like the original PDF. Margin comments explain why each paragraph matters for the Week 3 lab.",
+          "The doc preview shows the actual Chapter 4 paragraphs (Diaz 2024, pp. 14‑18) with pagination intact so it feels like a textbook PDF. Companion pins eq. (4.2) and the “vanishing gradient” caution with gold annotation pills.",
         insight:
-          "Companion highlighted the thesis, graphs, and drafted a 6-slide summary.",
-        action: "Open slides or ask for a 90-sec talking track.",
+          "Highlights live directly on the scanned text with references back to the lab assignments.",
+        action:
+          "Jump to the page 14 highlight or export this section to Slides.",
       },
       {
-        id: "lab",
-        heading: "Lab relevance",
+        id: "lab-map",
+        heading: "Lab variable mapping (Pages 22–27)",
         excerpt:
-          "Section 3 mirrors the Week 3 lab prompt and references Diaz 2024. Companion embedded sidebars summarising every cited experiment plus a callout reminding you which variables appear in the rubric. The doc feels like a full chapter with context-specific highlights.",
+          "Blue tags such as “Lab 03 · alpha_s” sit on top of the real text wherever the rubric variables appear. Companion preserves line numbers so you can cite the textbook without leaving the preview.",
         insight:
-          "Companion linked the citation to your Notes and added a flashcard suggestion.",
-        action: "Send flashcards to Sheets so you can review on mobile.",
+          "Callouts list the paragraph + line number Companion scraped, making lab write-ups citation-ready.",
+        action:
+          "Send these callouts to the lab tracker or ask for deeper context.",
       },
       {
         id: "figures",
-        heading: "Annotated figures + callouts",
+        heading: "Annotated figures + captions",
         excerpt:
-          "Pages 18-23 now include full-resolution figure captions, margin notes, and Companion-generated comparisons against Diaz 2024. The doc highlights where gradients spike and explains how that affects lab write-ups. Each paragraph feels like a real PDF instead of placeholder copy.",
+          "Figures 4.3, 4.7, and 4.9 render exactly like the book, but Companion layers caption cards explaining gradient spikes, axis normalisation, and phrases to reuse in reflections.",
         insight:
-          "AI annotations flag every figure that maps to the Week 3 rubric and store the context for future prompts.",
-        action:
-          "Jump to the annotated figure pack or ask for a Loom-ready walkthrough.",
+          "AI annotations pair each figure with a one-sentence takeaway tied to the Week 3 rubric.",
+        action: "Open the annotated figure pack or request a Loom walkthrough.",
       },
       {
         id: "discussion",
-        heading: "Seminar discussion prep",
+        heading: "Seminar + chapter summary",
         excerpt:
-          "The closing discussion spans three paragraphs recapping methodology, limitations, and open questions. Companion appended example talking points for seminar debates and mapped them to flashcards. Students can scroll the doc like an actual Google Doc preview without missing nuance.",
+          "Pages 56‑60 close the chapter with the canonical summary, and Companion injects seminar prompts, Chen 2025 counter-arguments, and inline notes while keeping the textbook layout intact.",
         insight:
-          "Companion pre-drafted a one-page discussion summary you can drop into Slides or Sheets.",
+          "Prompts mirror into flashcards and a Slides deck for rehearsal.",
         action:
-          "Send the summary to Gmail or append it to the Slides discussion deck.",
+          "Send the prompts to Gmail or drop them into the Slides discussion deck.",
       },
     ],
     inlineTips: [
-      "Flashcards already staged in Sheets with context pulled directly from the doc.",
-      'Suggested follow-up question: "Pull figures for Lab 03."',
+      "Flashcards already staged in Slides and Sheets with textbook citations embedded.",
+      "Say “Open reading flashcards” to load this gallery in the chat panel.",
       "Use Mark as reviewed once each section is summarised so Companion tracks progress.",
     ],
+    flashcards: [
+      {
+        id: "reading-fc-abstract",
+        tag: "Concept",
+        sectionId: "pages14",
+        prompt:
+          "What’s the key takeaway from the Chapter 4 attention primer (pp.14-18)?",
+        answer:
+          "Attention behaves like a probability distribution over token positions; tuning it raised focus scores 11% and the Notes flag eq. (4.2) for referencing.",
+      },
+      {
+        id: "reading-fc-lab",
+        tag: "Lab setup",
+        sectionId: "lab-map",
+        prompt:
+          "Where does the textbook introduce α_s and why does Lab 03 care?",
+        answer:
+          "Pages 22-24 tie α_s to stability checks; Companion tags every mention so the lab rubric references are one click away.",
+      },
+      {
+        id: "reading-fc-figure",
+        tag: "Figure 4.7",
+        sectionId: "figures",
+        prompt: "How should you describe the gradient spike in Figure 4.7?",
+        answer:
+          "Note the collapse after seven iterations and the normalised y-axis; Companion’s caption suggests citing page 33 when writing reflections.",
+      },
+      {
+        id: "reading-fc-discussion",
+        tag: "Seminar",
+        sectionId: "discussion",
+        prompt:
+          "What counter-argument does Chen 2025 raise in the chapter wrap?",
+        answer:
+          "Chen says the uplift is dataset-specific; Companion attaches that citation plus a follow-up question about regularisation strength.",
+      },
+    ],
+    flashcardDeckLink: "https://slides.google.com/readings-week3",
+    flashcardDeckLabel: "Open Slides flashcards",
   },
   notes: {
     title: "Lecture Notes – Neural Nets",
     subtitle: "Living concept map overlays the doc with linked ideas.",
     status: "Concept map refreshed",
+    courseLabel: "ML 241 · Machine Learning Studio",
+    conceptMapNarrative:
+      "Companion minted this concept map straight from lecture audio, readings, and labs. Nodes stay clickable inside Docs, and the Canvas view mirrors this layout in Slides for collaboration.",
     sections: [
       {
         id: "chain",
-        heading: "Backprop audio snippet",
+        heading: "Voice capture → ML concept node",
         excerpt:
-          "Audio snippets from Lecture 5 are transcribed paragraph by paragraph with timestamps. The doc includes inline screenshots of the whiteboard plus references back to Week 3 reading figures. Companion surfaces contextual tooltips so it feels like a living document.",
+          "Lecture 5 (ML foundations) is transcribed line-by-line with timestamps and whiteboard screenshots. Margin badges point each paragraph back to the concept map plus the Week 3 reading reference so neural-net theory never drifts from context.",
         insight:
-          "Companion transcribed and linked the audio to the reading and flashcards.",
-        action: "Open Slides concept map with this branch highlighted.",
+          "Companion stitches audio, notes, and readings so the page feels like a living workspace.",
+        action:
+          "Play the snippet or ask Companion to expand this ML node in Slides.",
       },
       {
-        id: "risk",
-        heading: "Cramming risk",
+        id: "map",
+        heading: "Concept map overlay",
         excerpt:
-          "Multiple TODO tags remain unresolved for Lab 02, and Companion now expands each TODO into a sentence describing blockers. The doc also stores your previous mitigation attempts, giving the page more density. Scroll like a real doc to see every action item.",
+          "Inline pills for Input Layer, Gradient Risk, and Seminar prompts live directly on the doc. Selecting one jumps to the concept map node and reveals the exact ML readings, labs, and tasks tied to that concept.",
         insight:
-          "Companion nudged the Exam Prep plan to reclaim a Friday block.",
-        action: "Accept or decline the suggested block.",
+          "Nodes show upstream and downstream dependencies so study groups know what to review next.",
+        action:
+          "Open the concept map or share this branch with your teammates.",
       },
       {
         id: "review",
-        heading: "Weekly review wrap",
+        heading: "Weekly wrap + automations",
         excerpt:
-          "Weekly review blocks close the doc with a narrative summary, open questions, and links to upcoming office hours. Companion layered in colour-coded annotations for conceptual gaps and automatically linked the Loom recap. It reads like the final packet you would share with a study group.",
+          "Companion closes the doc with a narrative summary, open questions, and office hours. Risk badges attach to ML nodes that still need attention while automation chips show where reminders were scheduled.",
         insight:
-          "Companion spotted duplicate prep tasks and merged them into a single reminder thread.",
+          "Concept map nodes double as Tasks so finishing a block updates Drive + Calendar automatically.",
         action:
-          "Accept the merged reminder or ask for a spaced-repetition plan.",
+          "Mark this review as done or ask for spaced repetition prompts.",
       },
     ],
     inlineTips: [
-      "Drive Whisper can bundle recordings with related notes and push them into Slides.",
-      "Voice button stays hot even when the doc is full screen for hands-free annotations.",
-      "Companion shows inline badges wherever action items or risks stack up.",
+      "Concept map nodes carry citations back to ML readings, labs, and exam packs.",
+      "Audio snippets stay playable even when the doc is full screen.",
+      "Use Highlight links to show every node connected to Lab 03.",
     ],
+    conceptMapNodes: [
+      {
+        id: "concept-audio",
+        title: "Backprop audio chain",
+        summary:
+          "Lecture 5 snippet (03:12) translated into structured ML notes with Diaz 2024 citations so you can quote it anywhere.",
+        connections: ["Reading · Figure 4", "Lab 03 rubric"],
+        status: "Synced",
+      },
+      {
+        id: "concept-gradient",
+        title: "Gradient risk alert",
+        summary:
+          "Highlights where gradients collapse after seven iterations and mirrors the risk Companion caught in the ML reading pack.",
+        connections: ["Week 3 checklist", "Exam prep deck"],
+        status: "Flagged",
+      },
+      {
+        id: "concept-review",
+        title: "Weekly review node",
+        summary:
+          "Narrative summary, open questions, and owners sit here so the study group knows who is doing what.",
+        connections: ["Office hours", "Slides recap"],
+        status: "Shared",
+      },
+      {
+        id: "concept-seminar",
+        title: "Seminar prompts",
+        summary:
+          "Discussion prompts map to Chen 2025 counter-arguments and are linked to flashcards for quick rehearsal.",
+        connections: ["Seminar doc", "Flashcards"],
+        status: "Ready",
+      },
+    ],
+    conceptMapLink: "https://slides.google.com/concept-map-week3",
+    conceptMapLabel: "Open Slides map",
   },
   meeting: {
     title: "CX Weekly Sync Notes",
@@ -879,34 +1103,37 @@ const documentCanvases: Record<string, DocumentCanvas> = {
         id: "summary",
         heading: "Highlights",
         excerpt:
-          "Volume down 8%, EU beta greenlit, and risk flagged on SLA. Companion pulled the full discussion transcript, follow-up questions, and decision log so the doc mimics a real meeting recap. Paragraphs include owners, timestamps, and attachments.",
+          "Volume down 8% WoW, EU beta remains greenlit, and onboarding SLA risk triggered an escalation. Companion stitched the transcript, decisions, and attachments into narrative paragraphs with owners + timestamps so it reads like a consultant-grade recap.",
         insight:
-          "Companion drafted the exec recap with decisions and owners pre-filled.",
-        action: "Send recap to stakeholders or push to Spaces.",
+          "Companion drafted the exec summary with KPIs, decisions, and links to the supporting docs.",
+        action:
+          "Send the recap to leadership or push it to Spaces for async consumption.",
       },
       {
         id: "memory",
         heading: "Organisational memory",
         excerpt:
-          "Last meeting requested vendor audit follow-up and KPI roll-over, and that context is now written out in two paragraphs. Prior decisions are quoted inline so anyone scanning the doc understands why a task exists. The doc reads like the canonical team memory.",
+          "Last sync’s vendor audit follow-up and Q2 KPI roll-over are restated verbatim so nobody loses context. Prior decisions are quoted inline with links back to last week's doc, making this feel like the canonical team memory you can forward to an exec.",
         insight:
-          'Agent reminds you "Would you like to carry forward last quarter\'s KPIs?"',
-        action: "Insert prior KPIs into the doc with one click.",
+          "Companion asks “Carry forward last quarter’s KPIs and attach to this recap?”",
+        action:
+          "Insert prior KPIs with one click or let Companion refresh the data from Sheets.",
       },
       {
         id: "owners",
         heading: "Owner matrix",
         excerpt:
-          "Action items are listed in long-form sentences with owner names, due dates, and dependencies. Companion cross-links each owner to their Drive workspace so context follows them. It feels like an actual Google Doc section rather than a placeholder table.",
+          "Action items appear in full sentences with owner, due date, dependency, and linked artifacts (Drive, Tasks, Asana). Each owner’s name jumps to their workspace so context travels with them.",
         insight:
-          "Companion auto-tagged each action with a primary owner and pulled their workspace context.",
-        action: "Send owners a digest or reassign with one click.",
+          "Companion auto-tagged owners, notified them in Tasks, and staged a digest email.",
+        action:
+          "Review the digest or ask Companion to reschedule / reassign right here.",
       },
     ],
     inlineTips: [
-      "Action items sync to Tasks and Asana automatically, including context links.",
-      "Calendar holds auto-update when deadlines shift so the doc always reflects reality.",
-      'Use "Highlight risks" to have Companion annotate any blocker paragraphs in red.',
+      "Action items sync to Google Tasks with context links and due dates.",
+      "Calendar holds update automatically when owners change deadlines.",
+      'Say "Highlight risks" to have Companion annotate blocker paragraphs in red for exec review.',
     ],
   },
   vendor: {
@@ -990,14 +1217,29 @@ const documentCanvases: Record<string, DocumentCanvas> = {
   },
 };
 
-const initialChat = (file?: DriveFile): ChatEntry[] => [
-  {
-    role: "agent",
-    text: file
-      ? `I’m already working on ${file.name}. Want the schedule, summary, or risk view?`
-      : "I’m watching your Drive for anything that needs action.",
-  },
-];
+const initialChat = (file?: DriveFile): ChatEntry[] => {
+  if (file?.id === "syllabus") {
+    return [
+      {
+        role: "agent",
+        text: "I pulled every CS 241 requirement into one course workspace. Need the weekly cadence or grading plan?",
+      },
+      {
+        role: "agent",
+        text: "Calendar holds, Tasks, and Drive folders are already linked—just tell me what to adjust.",
+      },
+    ];
+  }
+
+  return [
+    {
+      role: "agent",
+      text: file
+        ? `I’m already working on ${file.name}. Want the schedule, summary, or risk view?`
+        : "I’m watching your Drive for anything that needs action.",
+    },
+  ];
+};
 
 function App() {
   const [persona, setPersona] = useState<Persona>("student");
@@ -1018,7 +1260,7 @@ function App() {
     student: [
       {
         role: "agent",
-        text: "Hey! I’m watching Drive + Calendar for your courses. Need Docs summaries, Slides, or Sheets trackers?",
+        text: "I’m keeping CS 241 synced across Docs, Calendar, and Sheets. Want the course plan, reading summary, or exam pack?",
       },
     ],
     professional: [
@@ -1057,18 +1299,20 @@ function App() {
   const calendarFeed = calendarEntries[persona];
   const quickLinks = filesForPersona.slice(0, 3);
   const suggestionFeed = whisperSuggestions[persona];
-  const calendarDayStart = persona === "student" ? 8 * 60 : 7 * 60;
-  const calendarDayEnd = persona === "student" ? 22 * 60 : 20 * 60;
 
   useEffect(() => {
     if (!selectedFile) return;
+    const fileSwitchText =
+      selectedFile.id === "syllabus"
+        ? "Refreshing the CS 241 plan—ask me to tweak the cadence, grading focus, or push updates to Calendar."
+        : `Switched focus to ${selectedFile.name}. Ask me to open it in ${selectedFile.type}, sync it to Calendar, or prep a recap.`;
     setChatHistory((prev) => ({
       ...prev,
       [persona]: [
         ...prev[persona],
         {
           role: "agent",
-          text: `Switched focus to ${selectedFile.name}. Ask me to open it in ${selectedFile.type}, sync it to Calendar, or prep a recap.`,
+          text: fileSwitchText,
         },
       ],
     }));
@@ -1956,6 +2200,9 @@ function App() {
     const personaCalendarEntries = calendarEntries[persona];
     const appLaunchRoute = getRouteForFile(selectedFile?.id);
     const appLaunchLabel = getAppLaunchLabel(selectedFile);
+    const calendarDayStart = persona === "student" ? 8 * 60 : 7 * 60;
+    const calendarDayEnd = persona === "student" ? 22 * 60 : 20 * 60;
+    const calendarTimelineDay = personaCalendarEntries[0]?.day ?? "Mon";
     if (selectedFile?.id === "calendar" && doc) {
       return (
         <div className="doc-pane calendar-mode">
@@ -2042,12 +2289,18 @@ function App() {
             <div className="status-chip blue">{doc.status}</div>
           </div>
           <div className="calendar-mode-body">
-            <CalendarDayPreview
-              entries={personaCalendarEntries}
-              startMinutes={calendarDayStart}
-              endMinutes={calendarDayEnd}
-              size="large"
-            />
+            <div className="calendar-mode-main">
+              <CalendarWeekGallery
+                entries={personaCalendarEntries}
+                size="large"
+              />
+              <CalendarDayTimeline
+                entries={personaCalendarEntries}
+                dayLabel={calendarTimelineDay}
+                startMinutes={calendarDayStart}
+                endMinutes={calendarDayEnd}
+              />
+            </div>
             <div className="calendar-mode-sidebar">
               <h5>Upcoming events</h5>
               <ul>
@@ -3144,40 +3397,150 @@ const FileDocPage = () => {
     ? "student"
     : "professional";
   const [chatDocked, setChatDocked] = useState(true);
-  const docChatSamples: ChatEntry[] =
-    filePersona === "student"
-      ? [
-          {
-            role: "agent",
-            text: "🔍 Highlighted the risk paragraph and drafted mitigation notes for your study pack.",
-            linkLabel: "Open highlight",
-            linkTo: `/doc/${fileId}#risk`,
-          },
-          {
-            role: "user",
-            text: "Can you summarize the next section for Sheets?",
-          },
-          {
-            role: "agent",
-            text: "Summary ready. Want me to push it to Sheets or prep Slides talking points?",
-          },
-        ]
-      : [
-          {
-            role: "agent",
-            text: "📊 Pulled KPIs + flagged the onboarding risk in this doc. Ready to slot into Slides?",
-            linkLabel: "View KPI callout",
-            linkTo: `/doc/${fileId}#kpi`,
-          },
-          {
-            role: "user",
-            text: "Draft an exec recap snippet.",
-          },
-          {
-            role: "agent",
-            text: "Snippet is ready. I can drop it into Gmail or append it to Slides — just say the word.",
-          },
-        ];
+  const [focusedSection, setFocusedSection] = useState<string | null>(null);
+  const [emailDraftOpen, setEmailDraftOpen] = useState(false);
+  const [flashcardRevealMap, setFlashcardRevealMap] = useState<
+    Record<string, boolean>
+  >({});
+  const [calendarChatHistory, setCalendarChatHistory] =
+    useState<CalendarChatMessage[]>(calendarThreadSeed);
+  const [calendarChatPrompt, setCalendarChatPrompt] = useState("");
+  const buildDocChatSamples = (): ChatEntry[] => {
+    if (file?.id === "notes") {
+      return [
+        {
+          role: "user",
+          text: "Can you highlight every node tied to Lab 03? I need those citations.",
+        },
+        {
+          role: "agent",
+          text: "Done. Input Layer + Gradient Risk nodes glow in the doc and I attached Diaz 2024 page refs to your Lab 03 draft.",
+          linkLabel: "Jump to nodes",
+          linkTo: `/doc/${fileId}#map`,
+        },
+        {
+          role: "user",
+          text: "What should I review before the seminar debate?",
+        },
+        {
+          role: "agent",
+          text: "Seminar prompts still need the Chen 2025 quote. I can pull it from the reading pack and refresh the Slides concept map + flashcards.",
+        },
+        {
+          role: "user",
+          text: "Explain why Gradient Risk connects to Input Layer — I need the rationale.",
+        },
+        {
+          role: "agent",
+          text: "Gradient Risk inherits the Input Layer audio node plus Figure 4.7 annotations — citing pp.14-18 ties the concepts together. Want me to draft that summary?",
+        },
+        {
+          role: "user",
+          text: "Show me any concept that still lacks citations.",
+        },
+        {
+          role: "agent",
+          text: "Weekly Wrap is missing the Chapter 4 reference. I highlighted the section and linked the Slides branch so you can patch it.",
+          linkLabel: "View Weekly Wrap",
+          linkTo: `/doc/${fileId}#review`,
+        },
+        {
+          role: "user",
+          text: "And what concept should I study next if I only have 20 minutes?",
+        },
+        {
+          role: "agent",
+          text: "Focus on Seminar Prompts → it still lacks Chen 2025 context. I can queue the flashcards and move a focus block on your calendar if you want.",
+        },
+      ];
+    }
+    if (filePersona === "student") {
+      return [
+        {
+          role: "agent",
+          text: "🗂️ I turned the CS 241 syllabus into one living plan and pinned every deadline to Calendar + Tasks.",
+          linkLabel: "Review schedule",
+          linkTo: `/doc/${fileId}#cadence`,
+        },
+        {
+          role: "user",
+          text: "Move the Thursday reflection block later—I’ve got lab hours then.",
+        },
+        {
+          role: "agent",
+          text: "Done. I slid the Thursday study block to 8 PM and added a note for Prof. Diaz. Want me to send an updated plan to the team?",
+        },
+      ];
+    }
+    return [
+      {
+        role: "agent",
+        text: "📊 Pulled KPIs + flagged the onboarding risk in this doc. Ready to slot into Slides?",
+        linkLabel: "View KPI callout",
+        linkTo: `/doc/${fileId}#kpi`,
+      },
+      {
+        role: "user",
+        text: "Draft an exec recap snippet.",
+      },
+      {
+        role: "agent",
+        text: "Snippet is ready. I can drop it into Gmail or append it to Slides — just say the word.",
+      },
+    ];
+  };
+  const handleCalendarChatSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!calendarChatPrompt.trim()) return;
+    const stamp = new Date().toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    const trimmedPrompt = calendarChatPrompt.trim();
+    setCalendarChatHistory((prev) => [
+      ...prev,
+      {
+        id: `calendar-user-${Date.now()}`,
+        role: "user",
+        author: "You",
+        stamp,
+        tag: "Note",
+        text: trimmedPrompt,
+      },
+      {
+        id: `calendar-agent-${Date.now() + 1}`,
+        role: "agent",
+        author: "Companion",
+        stamp: "Just now",
+        tag: "Follow-up",
+        text: "Logged it. I can guard the block, ping attendees, or stage a recap whenever you’re ready.",
+      },
+    ]);
+    setCalendarChatPrompt("");
+  };
+
+  const docChatSamples = buildDocChatSamples();
+  const toggleFlashcardReveal = (cardId: string) => {
+    setFlashcardRevealMap((prev) => ({
+      ...prev,
+      [cardId]: !prev[cardId],
+    }));
+  };
+  const jumpToSection = (sectionId: string) => {
+    setFocusedSection(sectionId);
+    requestAnimationFrame(() => {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (!focusedSection) return;
+    const timeout = window.setTimeout(() => setFocusedSection(null), 2500);
+    return () => window.clearTimeout(timeout);
+  }, [focusedSection]);
 
   if (!file) {
     return (
@@ -3191,11 +3554,299 @@ const FileDocPage = () => {
     );
   }
   if (file.id === "calendar") {
+    const doc = documentCanvases[file.id];
     const personaCalendarEntries = calendarEntries[filePersona];
     const fileAppRoute = getRouteForFile(file.id);
     const fileAppLabel = getAppLaunchLabel(file);
+    const timelineDay = personaCalendarEntries[0]?.day ?? "Mon";
+    const timelineStart = filePersona === "student" ? 8 * 60 : 7 * 60;
+    const timelineEnd = filePersona === "student" ? 22 * 60 : 20 * 60;
+    const docInsightSections = doc?.sections?.slice(0, 3) ?? [];
+    const heroStats = [
+      {
+        id: "load",
+        label: "Today’s load",
+        value: "86% booked",
+        helper: "Afternoon stacked",
+      },
+      {
+        id: "risks",
+        label: "Context switches",
+        value: "2 risks",
+        helper: "Prep vs vendor",
+      },
+      {
+        id: "holds",
+        label: "Protected time",
+        value: "3 holds",
+        helper: "Companion enforced",
+      },
+    ];
+    const proactiveSuggestions = [
+      {
+        id: "deep-work",
+        tag: "Focus hold",
+        title: "Protect 3:00-4:00 PM for deck polish",
+        detail:
+          "Slides handoff is due by 5 PM. Companion suggests shifting the sync to async notes.",
+        impact: "+45 min deep work",
+        cta: "Preview hold",
+      },
+      {
+        id: "travel-block",
+        tag: "Travel buffer",
+        title: "Insert buffer before robotics standup",
+        detail:
+          "Commute from campus to lab has spiked this week. Companion recommends a 12 min hold.",
+        impact: "Avoids late arrival",
+        cta: "Add buffer",
+      },
+      {
+        id: "meeting-triage",
+        tag: "Context switch",
+        title: "Stack 1:1s back-to-back",
+        detail:
+          "Combines design + eng 1:1s with a shared deck so you can keep a clean block for writing.",
+        impact: "-2 swaps today",
+        cta: "Stage update",
+      },
+    ];
+    const autopilotPlays = [
+      {
+        id: "buffer",
+        title: "Add travel buffer",
+        detail: "Hold 12 min before robotics standup commute.",
+        state: "Applied",
+      },
+      {
+        id: "lunch",
+        title: "Move lunch sync",
+        detail:
+          "Swap lunch sync with async doc review so focus time stays intact.",
+        state: "Queued",
+      },
+      {
+        id: "doc-link",
+        title: "Attach doc context",
+        detail:
+          "Linked Slides prep doc + notes to the 5 PM presentation block.",
+        state: "Ready",
+      },
+    ];
     return (
-      <div className="demo-page calendar-doc">
+      <div className="calendar-page">
+        <div className="calendar-doc-toolbar">
+          <div className="calendar-doc-nav">
+            <Link className="ghost subtle" to="/">
+              ← Dashboard
+            </Link>
+            <Link className="ghost subtle" to="/companion">
+              Companion
+            </Link>
+          </div>
+          <div className="calendar-doc-actions">
+            <Link className="ghost app-launch" to={fileAppRoute}>
+              {fileAppLabel}
+            </Link>
+            <button type="button" className="primary light">
+              Protect focus time
+            </button>
+          </div>
+        </div>
+        <header className="calendar-doc-hero">
+          <div className="calendar-doc-headline">
+            <span className="badge soft">Google Calendar · Pulse</span>
+            <h1>{file.name}</h1>
+            <p>{file.description}</p>
+          </div>
+          <div className="calendar-hero-stats">
+            {heroStats.map((stat) => (
+              <article key={stat.id}>
+                <span>{stat.label}</span>
+                <strong>{stat.value}</strong>
+                <small>{stat.helper}</small>
+              </article>
+            ))}
+          </div>
+        </header>
+        {docInsightSections.length ? (
+          <section className="calendar-insight-grid">
+            {docInsightSections.map((section) => (
+              <article
+                key={`calendar-insight-${section.id}`}
+                className="calendar-insight-card"
+              >
+                <small>{section.heading}</small>
+                <strong>{section.insight}</strong>
+                <p>{section.action}</p>
+                <span className="calendar-insight-meta">
+                  Companion pulled this from Drive history.
+                </span>
+              </article>
+            ))}
+          </section>
+        ) : null}
+        <div className="calendar-doc-content">
+          <main className="calendar-doc-main">
+            <section className="calendar-doc-section">
+              <div className="section-head">
+                <small>Week at a glance</small>
+                <h2>Blocks Companion is enforcing</h2>
+                <p>
+                  Companion annotates every block with source context so Drive
+                  history, doc tasks, and commute intel stay visible.
+                </p>
+              </div>
+              <CalendarWeekGallery
+                entries={personaCalendarEntries}
+                size="large"
+              />
+            </section>
+            <section className="calendar-doc-section calendar-timeline-section">
+              <div className="section-head">
+                <small>Daily timeline</small>
+                <h2>{timelineDay} · Companion-tracked hours</h2>
+                <p>
+                  Hour-by-hour map of today’s load. AI-only holds stay pink so
+                  you can see what was auto-generated versus human-scheduled.
+                </p>
+              </div>
+              <CalendarDayTimeline
+                entries={personaCalendarEntries}
+                dayLabel={timelineDay}
+                startMinutes={timelineStart}
+                endMinutes={timelineEnd}
+              />
+            </section>
+          </main>
+          <aside className="calendar-doc-side">
+            <div className="calendar-side-card companion-card">
+              <div className="companion-card-head">
+                <div>
+                  <span>Block companion</span>
+                  <strong>Autopilot queue</strong>
+                </div>
+                <Link className="ghost subtle tiny" to="/companion">
+                  Open
+                </Link>
+              </div>
+              <ul className="companion-play-list">
+                {autopilotPlays.map((play) => (
+                  <li key={`companion-play-${play.id}`}>
+                    <div>
+                      <strong>{play.title}</strong>
+                      <p>{play.detail}</p>
+                    </div>
+                    <span className="companion-play-state">{play.state}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="calendar-side-card chat-card">
+              <div className="calendar-chat-head">
+                <div>
+                  <span>Companion chat</span>
+                  <strong>Live calendar thread</strong>
+                </div>
+                <button type="button" className="ghost tiny subtle">
+                  Ask Companion
+                </button>
+              </div>
+              <div className="chat-stack calendar-chat-stack">
+                <div className="chat-feed">
+                  {calendarChatHistory.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`chat-bubble ${message.role}`}
+                    >
+                      <div className="calendar-chat-label">
+                        <strong>{message.author}</strong>
+                        <small>{message.stamp}</small>
+                        <span>{message.tag}</span>
+                      </div>
+                      <span>{message.text}</span>
+                      {message.detail ? (
+                        <small className="calendar-chat-detail">
+                          {message.detail}
+                        </small>
+                      ) : null}
+                      {message.action ? (
+                        <button type="button" className="ghost tiny">
+                          {message.action}
+                        </button>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+                <form className="chat-form" onSubmit={handleCalendarChatSubmit}>
+                  <input
+                    value={calendarChatPrompt}
+                    onChange={(event) =>
+                      setCalendarChatPrompt(event.target.value)
+                    }
+                    placeholder="“Hold 30 minutes before the robotics shuttle…”"
+                  />
+                  <button type="submit">Send</button>
+                </form>
+                <div className="chat-meta">
+                  <span>Companion syncs Drive + Calendar every 5 min.</span>
+                  <Link className="ghost subtle tiny" to="/companion">
+                    Open Companion
+                  </Link>
+                </div>
+              </div>
+            </div>
+            <div className="calendar-side-card">
+              <h4>AI block recommendations</h4>
+              <div className="calendar-side-proposals">
+                {proactiveSuggestions.map((suggestion) => (
+                  <article key={`calendar-proposal-${suggestion.id}`}>
+                    <span className="calendar-proposal-tag">
+                      {suggestion.tag}
+                    </span>
+                    <strong>{suggestion.title}</strong>
+                    <p>{suggestion.detail}</p>
+                    <div className="calendar-proposal-meta">
+                      <span>{suggestion.impact}</span>
+                      <button type="button" className="ghost tiny">
+                        {suggestion.cta}
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+            <div className="calendar-side-card muted ledger-card">
+              <div className="calendar-ledger-head">
+                <div>
+                  <span>Automation ledger</span>
+                  <strong>Docs + Drive trail</strong>
+                </div>
+                <p>
+                  Companion watches doc edits and creates tasks + holds
+                  automatically.
+                </p>
+              </div>
+              {doc?.inlineTips?.length ? (
+                <ul className="calendar-ledger-list">
+                  {doc.inlineTips.map((tip) => (
+                    <li key={`calendar-doc-tip-${tip}`}>{tip}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No suggestions right now.</p>
+              )}
+            </div>
+          </aside>
+        </div>
+      </div>
+    );
+  }
+  const fileAppRoute = getRouteForFile(file.id);
+  const fileAppLabel = getAppLaunchLabel(file);
+  return (
+    <>
+      <div className="demo-page doc-view">
         <div className="doc-view-head">
           <div className="doc-head-left">
             <div className="doc-head-icon" aria-hidden="true">
@@ -3233,272 +3884,662 @@ const FileDocPage = () => {
           <span>{file.type}</span>
           <span>{file.meta}</span>
           <span>{file.status}</span>
+          <span>Folder: {file.folder}</span>
+          {doc?.courseLabel ? (
+            <span className="doc-course-meta">Course: {doc.courseLabel}</span>
+          ) : null}
         </div>
-        <div className="calendar-doc-body">
-          <CalendarDayPreview
-            entries={personaCalendarEntries}
-            startMinutes={6 * 60}
-            endMinutes={22 * 60}
-            size="large"
-          />
-          <aside className="calendar-doc-legend">
-            <h4>Today’s events</h4>
-            <ul>
-              {personaCalendarEntries.map((entry) => (
-                <li key={`calendar-doc-${entry.id}`}>
-                  <span className={`badge-dot ${entry.color}`} />
-                  <div>
-                    <strong>{entry.title}</strong>
-                    <small>{entry.time}</small>
-                    <span>{entry.location}</span>
-                  </div>
-                </li>
+        {doc ? (
+          <>
+            <div className="doc-insights-rail">
+              {doc.sections.slice(0, 3).map((section) => (
+                <article
+                  key={`insight-${section.id}`}
+                  className="doc-insight-card"
+                >
+                  <small>{section.heading}</small>
+                  <strong>{section.insight}</strong>
+                  <p>{section.action}</p>
+                </article>
               ))}
-            </ul>
-            {doc?.inlineTips?.length ? (
-              <div className="inline-tips compact">
-                <h5>Automation notes</h5>
+              <article className="doc-insight-card tips-card">
+                <small>Inline automations</small>
                 <ul>
-                  {doc.inlineTips.map((tip) => (
-                    <li key={`calendar-doc-tip-${tip}`}>{tip}</li>
+                  {doc.inlineTips.slice(0, 3).map((tip, index) => (
+                    <li key={`tip-pill-${index}`}>{tip}</li>
                   ))}
                 </ul>
+              </article>
+            </div>
+            {file.id === "meeting" ? (
+              <div className="doc-meeting-cta">
+                <div>
+                  <strong>Summarize & email meeting notes</strong>
+                  <p>
+                    Companion drafted the recap, tagged owners, and staged a
+                    Gmail outline you can edit. Click once to review or send
+                    before you leave the room.
+                  </p>
+                </div>
+                <div className="doc-meeting-cta-actions">
+                  <button
+                    type="button"
+                    className="primary"
+                    onClick={() => setEmailDraftOpen(true)}
+                  >
+                    Summarize + create email draft
+                  </button>
+                </div>
               </div>
             ) : null}
-          </aside>
-        </div>
-      </div>
-    );
-  }
-  const fileAppRoute = getRouteForFile(file.id);
-  const fileAppLabel = getAppLaunchLabel(file);
-  return (
-    <div className="demo-page doc-view">
-      <div className="doc-view-head">
-        <div className="doc-head-left">
-          <div className="doc-head-icon" aria-hidden="true">
-            {file.icon}
-          </div>
-          <div>
-            <span className="doc-head-app">{file.app}</span>
-            <h1>{file.name}</h1>
-            <p>{file.description}</p>
-          </div>
-        </div>
-      </div>
-      <div className="doc-head-actions doc-view-actions">
-        <div className="doc-head-actions-left">
-          <Link className="ghost subtle" to="/">
-            ← Dashboard
-          </Link>
-          <Link className="ghost subtle" to="/companion">
-            Companion
-          </Link>
-        </div>
-        <div className="doc-head-actions-right">
-          <Link className="ghost app-launch" to={fileAppRoute}>
-            {fileAppLabel}
-          </Link>
-          <button type="button" className="ghost">
-            Share
-          </button>
-          <button type="button" className="primary">
-            Export PDF
-          </button>
-        </div>
-      </div>
-      <div className="doc-view-meta">
-        <span>{file.type}</span>
-        <span>{file.meta}</span>
-        <span>{file.status}</span>
-        <span>Folder: {file.folder}</span>
-      </div>
-      {doc ? (
-        <>
-          <div className="doc-insights-rail">
-            {doc.sections.slice(0, 3).map((section) => (
-              <article
-                key={`insight-${section.id}`}
-                className="doc-insight-card"
-              >
-                <small>{section.heading}</small>
-                <strong>{section.insight}</strong>
-                <p>{section.action}</p>
-              </article>
-            ))}
-            <article className="doc-insight-card tips-card">
-              <small>Inline automations</small>
-              <ul>
-                {doc.inlineTips.slice(0, 3).map((tip, index) => (
-                  <li key={`tip-pill-${index}`}>{tip}</li>
-                ))}
-              </ul>
-            </article>
-          </div>
-          <div className="doc-stage-grid">
-            <div className="doc-page-shell">
-              <div
-                className="doc-page-scroll"
-                role="region"
-                aria-label="Google Doc preview"
-              >
-                <div className="doc-page-surface">
-                  <header className="doc-page-header">
-                    <div>
-                      <h3>{doc.title}</h3>
-                      <p>{doc.subtitle}</p>
-                    </div>
-                    <span className="doc-page-status">{doc.status}</span>
-                  </header>
-                  {doc.sections.map((section, index) => (
-                    <article
-                      key={`page-${section.id}`}
-                      id={section.id}
-                      className="doc-page-section"
-                    >
-                      <div className="doc-section-head">
-                        <span className="doc-section-pill">
-                          Section {index + 1}
-                        </span>
-                        <h4>{section.heading}</h4>
+            <div className="doc-stage-grid">
+              <div className="doc-page-shell">
+                <div
+                  className="doc-page-scroll"
+                  role="region"
+                  aria-label="Google Doc preview"
+                >
+                  <div className="doc-page-surface">
+                    <header className="doc-page-header">
+                      <div>
+                        {doc.courseLabel ? (
+                          <span
+                            className="doc-course-pill"
+                            aria-label="Course name"
+                          >
+                            Course · {doc.courseLabel}
+                          </span>
+                        ) : null}
+                        <h3>{doc.title}</h3>
+                        <p>{doc.subtitle}</p>
                       </div>
-                      <p>{section.excerpt}</p>
-                      <div className="doc-inline-callout">
-                        <span className="doc-inline-chip">AI annotation</span>
-                        <strong>{section.insight}</strong>
-                        <p>{section.action}</p>
-                        <div className="doc-inline-actions">
-                          <button type="button" className="primary">
-                            Apply note
-                          </button>
-                          <button type="button" className="ghost">
-                            Ask follow-up
-                          </button>
+                      <span className="doc-page-status">{doc.status}</span>
+                    </header>
+                    {doc.conceptMapNodes?.length ? (
+                      <div className="concept-map-preview">
+                        <div className="concept-map-preview-head">
+                          <div>
+                            <small>Interactive concept map</small>
+                            <strong>
+                              See how ML nodes relate without leaving Docs
+                            </strong>
+                          </div>
                         </div>
+                        <div className="concept-map-preview-grid">
+                          {doc.conceptMapNodes.slice(0, 4).map((node) => (
+                            <div
+                              key={`preview-${node.id}`}
+                              className="concept-map-preview-node"
+                            >
+                              <span className="concept-map-preview-title">
+                                {node.title}
+                              </span>
+                              <p>{node.summary}</p>
+                              {node.connections.length ? (
+                                <div className="concept-map-preview-connections">
+                                  {node.connections
+                                    .slice(0, 2)
+                                    .map((connection) => (
+                                      <span
+                                        key={`connection-${node.id}-${connection}`}
+                                        className="concept-map-preview-chip"
+                                      >
+                                        {connection}
+                                      </span>
+                                    ))}
+                                  {node.connections.length > 2 ? (
+                                    <span className="concept-map-preview-chip muted">
+                                      +{node.connections.length - 2} more
+                                    </span>
+                                  ) : null}
+                                </div>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                    {doc.sections.map((section, index) => (
+                      <article
+                        key={`page-${section.id}`}
+                        id={section.id}
+                        className={`doc-page-section ${
+                          focusedSection === section.id ? "focused" : ""
+                        }`}
+                      >
+                        <div className="doc-section-head">
+                          <span className="doc-section-pill">
+                            Section {index + 1}
+                          </span>
+                          <h4>{section.heading}</h4>
+                        </div>
+                        <p>{section.excerpt}</p>
+                        <div className="doc-inline-callout">
+                          <span className="doc-inline-chip">AI annotation</span>
+                          <strong>{section.insight}</strong>
+                          <p>{section.action}</p>
+                          <div className="doc-inline-actions">
+                            <button type="button" className="primary">
+                              Apply note
+                            </button>
+                            <button type="button" className="ghost">
+                              Ask follow-up
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                    <footer className="doc-page-footnotes">
+                      <h5>Tips from Companion</h5>
+                      <ul>
+                        {doc.inlineTips.map((tip, index) => (
+                          <li key={`footnote-${index}`}>{tip}</li>
+                        ))}
+                      </ul>
+                    </footer>
+                    {doc.conceptMapNarrative ? (
+                      <section className="concept-map-doc">
+                        <div className="concept-map-doc-graph">
+                          <div className="concept-map-doc-head">
+                            <div>
+                              <small>Concept map canvas</small>
+                              <strong>
+                                Companion-built doc students remix
+                              </strong>
+                              <p>{doc.conceptMapNarrative}</p>
+                            </div>
+                            <div className="concept-map-doc-actions">
+                              <button
+                                type="button"
+                                className="ghost"
+                                onClick={() => jumpToSection("map")}
+                              >
+                                Highlight nodes in doc
+                              </button>
+                            </div>
+                          </div>
+                          <div className="concept-map-doc-grid">
+                            <div className="concept-map-doc-node root">
+                              <span>Neural Net Fundamentals</span>
+                              <p>
+                                Auto-created from Lecture 5 audio + Chapter 4 +
+                                Lab 03 rubric
+                              </p>
+                            </div>
+                            <div className="concept-map-doc-node branch">
+                              <span>Input Layer</span>
+                              <p>Linked to reading pp.14‑18 + Slides demo</p>
+                              <small>Audio snippet 03:12</small>
+                            </div>
+                            <div className="concept-map-doc-node branch risk">
+                              <span>Gradient Risk</span>
+                              <p>Figure 4.7 highlights + risk alert timeline</p>
+                              <small>Companion flagged 2 blockers</small>
+                            </div>
+                            <div className="concept-map-doc-node branch">
+                              <span>Seminar Prompts</span>
+                              <p>Chen 2025 counter-argument + flashcards</p>
+                              <small>Slides branch ready</small>
+                            </div>
+                            <div className="concept-map-doc-node branch">
+                              <span>Weekly Wrap</span>
+                              <p>
+                                Owners + reminders synced to Drive & Calendar
+                              </p>
+                              <small>Shared with study group</small>
+                            </div>
+                          </div>
+                        </div>
+                      </section>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+              <aside
+                className={`doc-chat-card ${chatDocked ? "open" : "collapsed"}`}
+              >
+                <div className="doc-chat-card-head">
+                  <div>
+                    <strong>Drive Companion</strong>
+                    <span>Linked to {file.folder}</span>
+                  </div>
+                  <button
+                    className="ghost subtle"
+                    onClick={() => setChatDocked((prev) => !prev)}
+                  >
+                    {chatDocked ? "Hide" : "Show"}
+                  </button>
+                </div>
+                {chatDocked ? (
+                  <>
+                    <div className="chat-feed">
+                      {docChatSamples.map((entry, index) => (
+                        <div
+                          key={`doc-chat-${entry.role}-${index}`}
+                          className={`chat-bubble ${entry.role}`}
+                        >
+                          <span>{entry.text}</span>
+                          {entry.linkTo && (
+                            <Link className="chat-link" to={entry.linkTo}>
+                              {entry.linkLabel ?? "Open"}
+                            </Link>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <form
+                      className="chat-form"
+                      onSubmit={(event) => event.preventDefault()}
+                    >
+                      <input placeholder="Ask Companion to annotate, summarize…" />
+                      <button type="button">Send</button>
+                    </form>
+                  </>
+                ) : (
+                  <p className="doc-chat-hint">
+                    Companion chat is docked. Tap show to reopen.
+                  </p>
+                )}
+              </aside>
+            </div>
+            <div className="doc-automation-board">
+              <section className="doc-automation-section">
+                <div className="doc-automation-head">
+                  <div>
+                    <h4>AI highlights</h4>
+                    <p>
+                      Companion pinned the most important paragraphs in this
+                      doc.
+                    </p>
+                  </div>
+                  <span className="doc-automation-count">
+                    {doc.sections.length} callouts
+                  </span>
+                </div>
+                <div className="doc-highlight-grid">
+                  {doc.sections.map((section) => (
+                    <article
+                      key={`highlight-${section.id}`}
+                      className="doc-highlight-item"
+                    >
+                      <div className="doc-highlight-icon" aria-hidden="true">
+                        <span className="doc-highlight-icon-dot" />
+                      </div>
+                      <div className="doc-highlight-content">
+                        <span className="doc-highlight-label">
+                          {section.heading}
+                        </span>
+                        <p>{section.excerpt}</p>
+                        <div className="doc-highlight-note">
+                          <strong>{section.insight}</strong>
+                          <small>{section.action}</small>
+                        </div>
+                        <button
+                          type="button"
+                          className="doc-highlight-cta"
+                          onClick={() => jumpToSection(section.id)}
+                        >
+                          View in doc →
+                        </button>
                       </div>
                     </article>
                   ))}
-                  <footer className="doc-page-footnotes">
-                    <h5>Tips from Companion</h5>
-                    <ul>
-                      {doc.inlineTips.map((tip, index) => (
-                        <li key={`footnote-${index}`}>{tip}</li>
-                      ))}
-                    </ul>
-                  </footer>
                 </div>
-              </div>
-            </div>
-            <aside
-              className={`doc-chat-card ${chatDocked ? "open" : "collapsed"}`}
-            >
-              <div className="doc-chat-card-head">
-                <div>
-                  <strong>Drive Companion</strong>
-                  <span>Linked to {file.folder}</span>
+              </section>
+              <section className="doc-automation-section">
+                <div className="doc-automation-head">
+                  <div>
+                    <h4>Inline automations</h4>
+                    <p>Actions Companion can run without leaving the doc.</p>
+                  </div>
                 </div>
-                <button
-                  className="ghost subtle"
-                  onClick={() => setChatDocked((prev) => !prev)}
-                >
-                  {chatDocked ? "Hide" : "Show"}
-                </button>
-              </div>
-              {chatDocked ? (
-                <>
-                  <div className="chat-feed">
-                    {docChatSamples.map((entry, index) => (
-                      <div
-                        key={`doc-chat-${entry.role}-${index}`}
-                        className={`chat-bubble ${entry.role}`}
+                <ul className="doc-automation-list">
+                  {doc.inlineTips.map((tip, index) => (
+                    <li key={`automation-${index}`}>
+                      <span className="doc-automation-number">{index + 1}</span>
+                      <p>{tip}</p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+              {doc.conceptMapNodes?.length ? (
+                <section className="doc-automation-section doc-concept-section">
+                  <div className="doc-automation-head">
+                    <div>
+                      <h4>Concept map nodes Companion linked</h4>
+                      <p>
+                        Notes, readings, and labs stay connected so you can skim
+                        dependencies at a glance.
+                      </p>
+                    </div>
+                    <span className="doc-automation-count">
+                      {doc.conceptMapNodes.length} nodes
+                    </span>
+                  </div>
+                  <div className="doc-concept-grid">
+                    {doc.conceptMapNodes.map((node) => (
+                      <article
+                        key={`concept-${node.id}`}
+                        className="doc-concept-node"
                       >
-                        <span>{entry.text}</span>
-                        {entry.linkTo && (
-                          <Link className="chat-link" to={entry.linkTo}>
-                            {entry.linkLabel ?? "Open"}
-                          </Link>
-                        )}
-                      </div>
+                        <div className="doc-concept-node-head">
+                          <strong>{node.title}</strong>
+                          {node.status ? (
+                            <span className="doc-concept-node-status">
+                              {node.status}
+                            </span>
+                          ) : null}
+                        </div>
+                        <p>{node.summary}</p>
+                        {node.connections.length ? (
+                          <div className="doc-concept-node-links">
+                            {node.connections.map((connection) => (
+                              <span
+                                key={`${node.id}-${connection}`}
+                                className="doc-concept-chip"
+                              >
+                                {connection}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
+                      </article>
                     ))}
                   </div>
-                  <form
-                    className="chat-form"
-                    onSubmit={(event) => event.preventDefault()}
-                  >
-                    <input placeholder="Ask Companion to annotate, summarize…" />
-                    <button type="button">Send</button>
-                  </form>
-                </>
-              ) : (
-                <p className="doc-chat-hint">
-                  Companion chat is docked. Tap show to reopen.
-                </p>
-              )}
-            </aside>
-          </div>
-          <div className="doc-automation-board">
-            <section className="doc-automation-section">
-              <div className="doc-automation-head">
-                <div>
-                  <h4>AI highlights</h4>
-                  <p>
-                    Companion pinned the most important paragraphs in this doc.
-                  </p>
-                </div>
-                <span className="doc-automation-count">
-                  {doc.sections.length} callouts
-                </span>
-              </div>
-              <div className="doc-highlight-grid">
-                {doc.sections.map((section) => (
-                  <article
-                    key={`highlight-${section.id}`}
-                    className="doc-highlight-item"
-                  >
-                    <span className="doc-highlight-label">
-                      {section.heading}
-                    </span>
-                    <p>{section.excerpt}</p>
-                    <div className="doc-highlight-note">
-                      <strong>{section.insight}</strong>
-                      <small>{section.action}</small>
+                  {doc.conceptMapLink ? (
+                    <a
+                      className="concept-map-link"
+                      href={doc.conceptMapLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {doc.conceptMapLabel ?? "Open concept map"}
+                    </a>
+                  ) : null}
+                </section>
+              ) : null}
+              {doc.flashcards?.length ? (
+                <section className="doc-automation-section doc-flashcard-section">
+                  <div className="doc-automation-head">
+                    <div>
+                      <h4>Flashcards pulled from this reading</h4>
+                      <p>
+                        Tap reveal to study, or open the Slides deck Companion
+                        built.
+                      </p>
                     </div>
-                  </article>
-                ))}
+                    <span className="doc-automation-count">
+                      {doc.flashcards.length} cards
+                    </span>
+                  </div>
+                  <div className="doc-flashcard-gallery">
+                    {doc.flashcards.map((card) => {
+                      const revealed = !!flashcardRevealMap[card.id];
+                      return (
+                        <article
+                          key={`flashcard-${card.id}`}
+                          className={`doc-flashcard-card ${
+                            revealed ? "revealed" : ""
+                          }`}
+                        >
+                          {card.tag ? (
+                            <span className="doc-flashcard-tag">
+                              {card.tag}
+                            </span>
+                          ) : null}
+                          <strong>{card.prompt}</strong>
+                          {revealed ? (
+                            <p className="doc-flashcard-answer">
+                              {card.answer}
+                            </p>
+                          ) : (
+                            <p className="doc-flashcard-hint">
+                              Reveal to see the summary Companion wrote for this
+                              passage.
+                            </p>
+                          )}
+                          <div className="doc-flashcard-actions">
+                            <button
+                              type="button"
+                              className="ghost"
+                              onClick={() => toggleFlashcardReveal(card.id)}
+                            >
+                              {revealed ? "Hide answer" : "Reveal"}
+                            </button>
+                            {card.sectionId ? (
+                              <button
+                                type="button"
+                                className="doc-flashcard-jump"
+                                onClick={() => jumpToSection(card.sectionId!)}
+                              >
+                                View section →
+                              </button>
+                            ) : null}
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                  {doc.flashcardDeckLink ? (
+                    <a
+                      className="flashcard-slides-link"
+                      href={doc.flashcardDeckLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {doc.flashcardDeckLabel ?? "Open in Slides"}
+                    </a>
+                  ) : null}
+                </section>
+              ) : null}
+            </div>
+          </>
+        ) : (
+          <p>This file doesn’t have a full document canvas yet.</p>
+        )}
+      </div>
+      {emailDraftOpen ? (
+        <div className="email-draft-overlay" role="dialog" aria-modal="true">
+          <div className="email-draft-modal">
+            <div className="email-draft-header">
+              <strong>New message</strong>
+              <div className="email-draft-header-actions">
+                <button
+                  type="button"
+                  className="email-draft-open-gmail"
+                  onClick={() =>
+                    window.open("https://mail.google.com/", "_blank")
+                  }
+                >
+                  Open in Gmail ↗
+                </button>
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={() => setEmailDraftOpen(false)}
+                  aria-label="Close draft"
+                >
+                  ×
+                </button>
               </div>
-            </section>
-            <section className="doc-automation-section">
-              <div className="doc-automation-head">
-                <div>
-                  <h4>Inline automations</h4>
-                  <p>Actions Companion can run without leaving the doc.</p>
-                </div>
+            </div>
+            <div className="email-draft-field">
+              <label>To</label>
+              <input value="leadership@company.com" readOnly />
+            </div>
+            <div className="email-draft-field inline">
+              <div>
+                <label>Cc</label>
+                <input value="cx-team@company.com" readOnly />
               </div>
-              <ul className="doc-automation-list">
-                {doc.inlineTips.map((tip, index) => (
-                  <li key={`automation-${index}`}>
-                    <span className="doc-automation-number">{index + 1}</span>
-                    <p>{tip}</p>
-                  </li>
-                ))}
-              </ul>
-            </section>
+              <div>
+                <label>Bcc</label>
+                <input value="me@company.com" readOnly />
+              </div>
+            </div>
+            <div className="email-draft-field">
+              <label>Subject</label>
+              <input
+                value="[CX Sync] Summary + actions — ready to send"
+                readOnly
+              />
+            </div>
+            <div className="email-draft-body">
+              <p>Hi team,</p>
+              <p>
+                <strong>Highlights</strong>
+                <br />• <strong>Volume −8% WoW</strong> — conversion drag traced
+                to EU onboarding backlog; mitigation brief for CS leadership
+                attached (“Volume Recovery Plan v2”).
+                <br />• <strong>EU beta remains green</strong> — next go/no-go
+                checkpoint Thu · 3:00 PM (calendar hold staged; Slides recap
+                ready).
+                <br />• <strong>Onboarding SLA risk</strong> — CX Ops requested
+                an escalation summary following today’s sync.
+              </p>
+              <p>
+                <strong>Risk / Actions</strong>
+                <br />• SLA breach on onboarding — <strong>Maya S.</strong> owns
+                follow-up (<em>due Tue</em>). Companion pre-tagged Tasks, linked
+                the CX Sync doc, and drafted the vendor update.
+                <br />• <strong>Volume recovery KPIs</strong> —{" "}
+                <strong>Leo</strong>
+                publishes tomorrow’s dashboard; KPI snapshot + Slides deck ready
+                if you’d like them attached.
+                <br />• Need me to bundle the Slides recap or KPI sheet before
+                we hit send?
+              </p>
+              <p>– Companion</p>
+            </div>
+            <div className="email-draft-actions">
+              <button type="button" className="primary">
+                Send now
+              </button>
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => setEmailDraftOpen(false)}
+              >
+                Save to drafts
+              </button>
+            </div>
           </div>
-        </>
-      ) : (
-        <p>This file doesn’t have a full document canvas yet.</p>
-      )}
+        </div>
+      ) : null}
+    </>
+  );
+};
+
+const CalendarWeekGallery = ({
+  entries,
+  size = "small",
+}: CalendarWeekGalleryProps) => {
+  const dayOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const groupedEntries = entries.reduce<Record<string, CalendarEntry[]>>(
+    (acc, entry) => {
+      if (!acc[entry.day]) {
+        acc[entry.day] = [];
+      }
+      acc[entry.day].push(entry);
+      return acc;
+    },
+    {}
+  );
+  const orderedDays = [
+    ...dayOrder.filter(
+      (day) => groupedEntries[day] && groupedEntries[day].length > 0
+    ),
+    ...Object.keys(groupedEntries).filter((day) => !dayOrder.includes(day)),
+  ];
+  const baselineMinutes = 12 * 60;
+  const computeLoad = (dayEntries: CalendarEntry[]) => {
+    const minutesBooked = dayEntries.reduce((sum, entry) => {
+      const duration = Math.max(entry.endMinutes - entry.startMinutes, 30);
+      return sum + duration;
+    }, 0);
+    return Math.min(
+      100,
+      Math.max(10, Math.round((minutesBooked / baselineMinutes) * 100))
+    );
+  };
+  const formatHoldLabel = (count: number) => {
+    if (!count) return "No protected time";
+    return `${count} Companion hold${count > 1 ? "s" : ""}`;
+  };
+  if (orderedDays.length === 0) {
+    return null;
+  }
+  return (
+    <div className={`calendar-day-view ${size}`}>
+      {orderedDays.map((day) => {
+        const dayEntries = groupedEntries[day] ?? [];
+        const load = computeLoad(dayEntries);
+        const protectedBlocks = dayEntries.filter((entry) => {
+          const label = entry.status.toLowerCase();
+          return label.includes("focus") || label.includes("hold");
+        }).length;
+        return (
+          <article key={`calendar-day-${day}`} className="calendar-day-card">
+            <div className="calendar-day-card-head">
+              <div>
+                <span>{day} rhythm</span>
+                <strong>{load}% booked</strong>
+                <small>{formatHoldLabel(protectedBlocks)}</small>
+              </div>
+              <button type="button" className="ghost tiny subtle">
+                Review
+              </button>
+            </div>
+            <div className="calendar-block-list">
+              {dayEntries.map((entry) => {
+                const sourceLabel =
+                  entry.source === "companion" ? "AI auto" : "Manual";
+                return (
+                  <div
+                    key={`calendar-block-${entry.id}`}
+                    className={`calendar-block ${entry.color}`}
+                  >
+                    <div className="calendar-block-meta">
+                      <span className="calendar-block-time">{entry.time}</span>
+                      <span className="calendar-block-status">
+                        {entry.status}
+                      </span>
+                    </div>
+                    <strong>{entry.title}</strong>
+                    <p>{entry.meta}</p>
+                    <div className="calendar-block-foot">
+                      <span>{entry.location}</span>
+                      <span
+                        className={`calendar-block-chip ${
+                          entry.source ?? "manual"
+                        }`}
+                      >
+                        {sourceLabel}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </article>
+        );
+      })}
     </div>
   );
 };
 
-const CalendarDayPreview = ({
+const CalendarDayTimeline = ({
   entries,
+  dayLabel,
   startMinutes,
   endMinutes,
-  size = "small",
-}: CalendarDayPreviewProps) => {
-  const isSmall = size === "small";
+}: CalendarDayTimelineProps) => {
+  const dayEntries = entries
+    .filter((entry) => entry.day === dayLabel)
+    .sort((a, b) => a.startMinutes - b.startMinutes);
+  if (!dayEntries.length) {
+    return null;
+  }
   const totalMinutes = Math.max(endMinutes - startMinutes, 60);
   const hourMarks = Array.from(
     { length: Math.floor(totalMinutes / 60) + 1 },
@@ -3510,46 +4551,54 @@ const CalendarDayPreview = ({
     const displayHour = hour % 12 || 12;
     return `${displayHour} ${suffix}`;
   };
+  const timelineHeight = 640;
+  const minBlockHeight = 120;
+  const trackStyle = { height: `${timelineHeight}px` };
   return (
-    <div className={`calendar-day-view ${size}`}>
-      <div className="calendar-hours">
+    <div className="calendar-timeline">
+      <div className="calendar-timeline-hours" style={trackStyle}>
         {hourMarks.map((minutes) => {
           const offset = minutes - startMinutes;
-          const top = (offset / totalMinutes) * 100;
+          const top = (offset / totalMinutes) * timelineHeight;
           return (
-            <span key={`hour-${minutes}`} style={{ top: `${top}%` }}>
+            <span key={`timeline-hour-${minutes}`} style={{ top: `${top}px` }}>
               {formatLabel(minutes)}
             </span>
           );
         })}
       </div>
-      <div className="calendar-day-column">
-        {entries.map((entry) => {
+      <div className="calendar-timeline-track" style={trackStyle}>
+        {dayEntries.map((entry) => {
           const clampedStart = Math.max(entry.startMinutes, startMinutes);
           const clampedEnd = Math.min(entry.endMinutes, endMinutes);
           const offset = clampedStart - startMinutes;
           const duration = Math.max(clampedEnd - clampedStart, 30);
-          const top = (offset / totalMinutes) * 100;
+          const top = (offset / totalMinutes) * timelineHeight;
           const height = Math.max(
-            (duration / totalMinutes) * 100,
-            (45 / totalMinutes) * 100
+            (duration / totalMinutes) * timelineHeight,
+            minBlockHeight
           );
+          const sourceLabel =
+            entry.source === "companion" ? "AI hold" : "Manual";
           return (
             <div
-              key={`timeline-${entry.id}`}
-              className={`calendar-event-block ${entry.color} ${
-                isSmall ? "small" : "large"
-              }`}
-              style={{ top: `${top}%`, height: `${height}%` }}
+              key={`timeline-block-${entry.id}`}
+              className={`calendar-timeline-block ${entry.color}`}
+              style={{ top: `${top}px`, height: `${height}px` }}
             >
-              <div className="calendar-event-block-time">{entry.time}</div>
-              <strong className={isSmall ? "single-line" : ""}>
-                {entry.title}
-              </strong>
-              <span className="calendar-event-block-location">
+              <div className="calendar-timeline-time">{entry.time}</div>
+              <strong>{entry.title}</strong>
+              <span className="calendar-timeline-location">
                 {entry.location}
               </span>
-              <span className="calendar-event-block-meta">{entry.meta}</span>
+              <span className="calendar-timeline-meta">{entry.meta}</span>
+              <span
+                className={`calendar-timeline-source ${
+                  entry.source ?? "manual"
+                }`}
+              >
+                {sourceLabel}
+              </span>
             </div>
           );
         })}
