@@ -8,6 +8,7 @@ import {
   useParams,
 } from "react-router-dom";
 import "./App.css";
+import companionMark from "./assets/companion-mark.svg";
 
 type Persona = "student" | "professional";
 
@@ -115,8 +116,6 @@ type CalendarWeekGalleryProps = {
 type CalendarDayTimelineProps = {
   entries: CalendarEntry[];
   dayLabel: string;
-  startMinutes: number;
-  endMinutes: number;
 };
 type CalendarChatMessage = {
   id: string;
@@ -1420,116 +1419,65 @@ function App() {
   };
 
   const renderTourCarousel = () => (
-    <div className="tour-carousel">
-      <div className="tour-steps" ref={tourTrackRef}>
-        {demoSteps.map((step, index) => {
-          const isActive = activeDemoStep?.id === step.id;
-          const isStudent = step.persona === "student";
-          const previewRoute = getRouteForFile(step.fileId);
-          return (
-            <Link
-              key={step.id}
-              className={`tour-card ${isActive ? "active" : ""} ${
-                isStudent ? "student" : "pro"
-              }`}
-              to={previewRoute}
-              onClick={() => focusTourStep(index, step)}
-            >
-              <div className="tour-card-top">
-                <div className="tour-pill">
-                  {isStudent ? "🎓 Student" : "💼 Professional"}
-                </div>
-                <strong>{step.title}</strong>
-                <p className="tour-subtitle">{step.subtitle}</p>
-              </div>
-              <div className="tour-card-body">
-                {step.highlights.map((point) => (
-                  <div key={point} className="tour-chip">
-                    {point}
-                  </div>
-                ))}
-              </div>
-              <span className="tour-cta">{step.action}</span>
-            </Link>
-          );
-        })}
-      </div>
-      <div className="tour-fade left" aria-hidden="true" />
-      <div className="tour-fade right" aria-hidden="true" />
+    <div className="tour-chip-row" ref={tourTrackRef}>
+      {demoSteps.map((step, index) => {
+        const isActive = activeDemoStep?.id === step.id;
+        const isStudent = step.persona === "student";
+        return (
+          <button
+            key={step.id}
+            type="button"
+            className={`tour-chip-card ${isActive ? "active" : ""} ${
+              isStudent ? "student" : "pro"
+            }`}
+            onClick={() => focusTourStep(index, step)}
+            aria-pressed={isActive}
+          >
+            <span className="tour-chip-pill">
+              {isStudent ? "🎓 Student" : "💼 Professional"}
+            </span>
+            <strong>{step.title}</strong>
+            <small>{step.subtitle}</small>
+          </button>
+        );
+      })}
     </div>
   );
   const shouldShowTourNav = tourActive || location.pathname === "/";
   const renderTourNav = () => {
     if (!shouldShowTourNav) return null;
+    const guidedStep = tourActive && currentTourStep ? currentTourStep : null;
     return (
       <nav
-        className={`tour-nav ${tourCollapsed ? "collapsed" : ""} ${
+        className={`tour-nav compact ${tourCollapsed ? "collapsed" : ""} ${
           tourActive ? "active" : ""
         }`}
       >
-        <div className="tour-heading">
-          <div className="tour-meta">
-            <strong>Companion tour</strong>
-            <span>
-              Swipe through the signature student + professional MVP moments.
-            </span>
+        <div className="tour-compact">
+          <div className="tour-compact-meta">
+            <span>Companion tour</span>
+            <strong>
+              {guidedStep?.title ?? "Jump between signature scenarios"}
+            </strong>
+            <p>
+              {guidedStep?.subtitle ??
+                "Tap a card to open student or pro flows without leaving the demo."}
+            </p>
           </div>
-          <div className="tour-controls">
-            <span className="tour-hint">Scroll to preview each demo</span>
-            <div className="tour-buttons">
-              <button
-                type="button"
-                aria-label="Scroll tour left"
-                onClick={() => scrollTour("left")}
-              >
-                ←
-              </button>
-              <button
-                type="button"
-                aria-label="Scroll tour right"
-                onClick={() => scrollTour("right")}
-              >
-                →
-              </button>
-            </div>
-            {!tourActive && (
-              <button
-                type="button"
-                className="tour-toggle"
-                onClick={() => setTourCollapsed((prev) => !prev)}
-              >
-                {tourCollapsed ? "Open" : "Hide"}
-              </button>
-            )}
-          </div>
-        </div>
-        {tourActive && currentTourStep ? (
-          <>
-            <div className="tour-guided">
-              <div className="tour-guided-info">
-                <span>
-                  Step {tourStepIndex + 1} of {totalTourSteps}
-                </span>
-                <strong>{currentTourStep.title}</strong>
-                <p>{currentTourStep.subtitle}</p>
-                <div className="tour-guided-points">
-                  {currentTourStep.highlights.map((point) => (
-                    <span key={`guided-${point}`}>{point}</span>
-                  ))}
-                </div>
-              </div>
-              <div className="tour-guided-actions">
+          <div className="tour-compact-actions">
+            {guidedStep ? (
+              <>
                 <button
                   type="button"
-                  className="ghost"
+                  className="ghost subtle"
                   onClick={handleTourPrev}
                   disabled={tourStepIndex === 0}
                 >
-                  ← Previous
+                  Prev
                 </button>
                 <button
                   type="button"
-                  className="ghost"
+                  className="ghost subtle"
                   onClick={openTourScenario}
                 >
                   Open scenario
@@ -1541,34 +1489,55 @@ function App() {
                 >
                   {tourStepIndex === totalTourSteps - 1
                     ? "Finish tour"
-                    : "Next scenario →"}
+                    : "Next scenario"}
                 </button>
-                <button type="button" className="link" onClick={exitTour}>
-                  Exit tour
+                <button type="button" className="ghost subtle" onClick={exitTour}>
+                  Exit
                 </button>
-              </div>
-            </div>
-            {renderTourCarousel()}
-          </>
-        ) : (
-          !tourCollapsed &&
-          location.pathname === "/" && (
-            <>
-              <div className="tour-optin">
-                <div>
-                  <strong>Ready for a walkthrough?</strong>
-                  <p>
-                    See how Companion handles syllabi, readings, meetings, and
-                    more in a guided sequence.
-                  </p>
-                </div>
-                <button type="button" className="primary" onClick={startTour}>
-                  Start guided tour
-                </button>
-              </div>
+              </>
+            ) : (
+              <button type="button" className="primary" onClick={startTour}>
+                Play guided tour
+              </button>
+            )}
+            <button
+              type="button"
+              className="ghost subtle tour-collapse-btn"
+              onClick={() => setTourCollapsed((prev) => !prev)}
+            >
+              {tourCollapsed ? "Expand" : "Collapse"}
+            </button>
+          </div>
+        </div>
+        {!tourCollapsed && (
+          <>
+            <div className="tour-track">
+              <button
+                type="button"
+                className="tour-arrow"
+                aria-label="Scroll tour left"
+                onClick={() => scrollTour("left")}
+              >
+                ←
+              </button>
               {renderTourCarousel()}
-            </>
-          )
+              <button
+                type="button"
+                className="tour-arrow"
+                aria-label="Scroll tour right"
+                onClick={() => scrollTour("right")}
+              >
+                →
+              </button>
+            </div>
+            {guidedStep ? (
+              <div className="tour-mini-highlights">
+                {guidedStep.highlights.map((point) => (
+                  <span key={`mini-${point}`}>{point}</span>
+                ))}
+              </div>
+            ) : null}
+          </>
         )}
       </nav>
     );
@@ -2158,40 +2127,45 @@ function App() {
 
   const renderDriveTable = () => (
     <div className="recent-list">
-      {filesForPersona.map((file) => (
-        <button
-          key={file.id}
-          className={`recent-card ${
-            file.id === selectedFile?.id ? "active" : ""
-          }`}
-          onClick={() => {
-            setSelectedFileId(file.id);
-            setDocCanvasOpen(false);
-          }}
-        >
-          <div className="recent-icon">{file.icon}</div>
-          <div className="recent-body">
-            <div className="recent-header">
-              <div className="recent-title">
-                <strong>{file.name}</strong>
-                <span className="recent-folder">{file.folder}</span>
+      {filesForPersona.map((file) => {
+        const destination = getRouteForFile(file.id);
+        return (
+          <Link
+            key={file.id}
+            className={`recent-card ${
+              file.id === selectedFile?.id ? "active" : ""
+            }`}
+            to={destination}
+            onClick={() => {
+              setSelectedFileId(file.id);
+              setDocCanvasOpen(false);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          >
+            <div className="recent-icon">{file.icon}</div>
+            <div className="recent-body">
+              <div className="recent-header">
+                <div className="recent-title">
+                  <strong>{file.name}</strong>
+                  <span className="recent-folder">{file.folder}</span>
+                </div>
+                <span className="recent-tag">{file.app}</span>
               </div>
-              <span className="recent-tag">{file.app}</span>
+              <p className="recent-description">{file.description}</p>
+              <div className="recent-meta">
+                <span>📁 {file.folder}</span>
+                <span>👤 {file.owner}</span>
+                <span>📅 {file.modified}</span>
+                <span>⬇️ {file.size}</span>
+              </div>
+              <div className="recent-status">
+                <span>{file.tag}</span>
+                <strong>{file.status}</strong>
+              </div>
             </div>
-            <p className="recent-description">{file.description}</p>
-            <div className="recent-meta">
-              <span>📁 {file.folder}</span>
-              <span>👤 {file.owner}</span>
-              <span>📅 {file.modified}</span>
-              <span>⬇️ {file.size}</span>
-            </div>
-            <div className="recent-status">
-              <span>{file.tag}</span>
-              <strong>{file.status}</strong>
-            </div>
-          </div>
-        </button>
-      ))}
+          </Link>
+        );
+      })}
     </div>
   );
 
@@ -2200,8 +2174,6 @@ function App() {
     const personaCalendarEntries = calendarEntries[persona];
     const appLaunchRoute = getRouteForFile(selectedFile?.id);
     const appLaunchLabel = getAppLaunchLabel(selectedFile);
-    const calendarDayStart = persona === "student" ? 8 * 60 : 7 * 60;
-    const calendarDayEnd = persona === "student" ? 22 * 60 : 20 * 60;
     const calendarTimelineDay = personaCalendarEntries[0]?.day ?? "Mon";
     if (selectedFile?.id === "calendar" && doc) {
       return (
@@ -2297,8 +2269,6 @@ function App() {
               <CalendarDayTimeline
                 entries={personaCalendarEntries}
                 dayLabel={calendarTimelineDay}
-                startMinutes={calendarDayStart}
-                endMinutes={calendarDayEnd}
               />
             </div>
             <div className="calendar-mode-sidebar">
@@ -2494,7 +2464,9 @@ function App() {
     <div className="drive-app">
       <header className="google-bar">
         <div className="google-left">
-          <div className="drive-logo">▲</div>
+          <div className="drive-logo">
+            <img src={companionMark} alt="Drive Companion" />
+          </div>
           <span>Drive Companion</span>
         </div>
         <div className="search-box">
@@ -2890,115 +2862,6 @@ function App() {
         </aside>
       </div>
 
-      <nav
-        className={`tour-nav ${tourCollapsed ? "collapsed" : ""} ${
-          tourActive ? "active" : ""
-        }`}
-      >
-        <div className="tour-heading">
-          <div className="tour-meta">
-            <strong>Companion tour</strong>
-            <span>
-              Swipe through the signature student + professional MVP moments.
-            </span>
-          </div>
-          <div className="tour-controls">
-            <span className="tour-hint">Scroll to preview each demo</span>
-            <div className="tour-buttons">
-              <button
-                type="button"
-                aria-label="Scroll tour left"
-                onClick={() => scrollTour("left")}
-              >
-                ←
-              </button>
-              <button
-                type="button"
-                aria-label="Scroll tour right"
-                onClick={() => scrollTour("right")}
-              >
-                →
-              </button>
-            </div>
-            {!tourActive && (
-              <button
-                type="button"
-                className="tour-toggle"
-                onClick={() => setTourCollapsed((prev) => !prev)}
-              >
-                {tourCollapsed ? "Open" : "Hide"}
-              </button>
-            )}
-          </div>
-        </div>
-        {tourActive && currentTourStep ? (
-          <>
-            <div className="tour-guided">
-              <div className="tour-guided-info">
-                <span>
-                  Step {tourStepIndex + 1} of {totalTourSteps}
-                </span>
-                <strong>{currentTourStep.title}</strong>
-                <p>{currentTourStep.subtitle}</p>
-                <div className="tour-guided-points">
-                  {currentTourStep.highlights.map((point) => (
-                    <span key={`guided-${point}`}>{point}</span>
-                  ))}
-                </div>
-              </div>
-              <div className="tour-guided-actions">
-                <button
-                  type="button"
-                  className="ghost"
-                  onClick={handleTourPrev}
-                  disabled={tourStepIndex === 0}
-                >
-                  ← Previous
-                </button>
-                <button
-                  type="button"
-                  className="ghost"
-                  onClick={openTourScenario}
-                >
-                  Open scenario
-                </button>
-                <button
-                  type="button"
-                  className="primary"
-                  onClick={handleTourNext}
-                >
-                  {tourStepIndex === totalTourSteps - 1
-                    ? "Finish tour"
-                    : "Next scenario →"}
-                </button>
-                <button type="button" className="link" onClick={exitTour}>
-                  Exit tour
-                </button>
-              </div>
-            </div>
-            {renderTourCarousel()}
-          </>
-        ) : (
-          !tourCollapsed && (
-            <>
-              <div className="tour-optin">
-                <div>
-                  <strong>Ready for a walkthrough?</strong>
-                  <p>
-                    See how Companion handles syllabi, readings, meetings, and
-                    more in a guided sequence.
-                  </p>
-                </div>
-                <button type="button" className="primary" onClick={startTour}>
-                  Start guided tour
-                </button>
-              </div>
-              {renderTourCarousel()}
-            </>
-          )
-        )}
-      </nav>
-
       <Link className="floating-chat" to="/companion">
         💬 <span>Chat with Companion</span>
       </Link>
@@ -3348,13 +3211,21 @@ const DocsDemo = ({ files }: DocsDemoProps) => (
     </p>
     <div className="demo-card-grid">
       {files.slice(0, 3).map((file) => (
-        <div key={file.id} className="demo-card">
+        <Link
+          key={file.id}
+          className="demo-card"
+          to={getRouteForFile(file.id)}
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        >
           <div className="demo-card-head">
             <span className="demo-app">{file.app}</span>
             <strong>{file.name}</strong>
           </div>
           <small>{file.description}</small>
-        </div>
+          <span className="demo-card-cta">
+            Open {file.app === "Docs" ? "doc" : file.app}
+          </span>
+        </Link>
       ))}
     </div>
     <Link className="ghost" to="/">
@@ -3372,13 +3243,21 @@ const OpsDemo = ({ files }: DocsDemoProps) => (
     </p>
     <div className="demo-card-grid">
       {files.slice(0, 3).map((file) => (
-        <div key={file.id} className="demo-card">
+        <Link
+          key={file.id}
+          className="demo-card"
+          to={getRouteForFile(file.id)}
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        >
           <div className="demo-card-head">
             <span className="demo-app">{file.app}</span>
             <strong>{file.name}</strong>
           </div>
           <small>{file.description}</small>
-        </div>
+          <span className="demo-card-cta">
+            Open {file.app === "Docs" ? "doc" : file.app}
+          </span>
+        </Link>
       ))}
     </div>
     <Link className="ghost" to="/">
@@ -3559,8 +3438,6 @@ const FileDocPage = () => {
     const fileAppRoute = getRouteForFile(file.id);
     const fileAppLabel = getAppLaunchLabel(file);
     const timelineDay = personaCalendarEntries[0]?.day ?? "Mon";
-    const timelineStart = filePersona === "student" ? 8 * 60 : 7 * 60;
-    const timelineEnd = filePersona === "student" ? 22 * 60 : 20 * 60;
     const docInsightSections = doc?.sections?.slice(0, 3) ?? [];
     const heroStats = [
       {
@@ -3714,8 +3591,6 @@ const FileDocPage = () => {
               <CalendarDayTimeline
                 entries={personaCalendarEntries}
                 dayLabel={timelineDay}
-                startMinutes={timelineStart}
-                endMinutes={timelineEnd}
               />
             </section>
           </main>
@@ -3742,60 +3617,75 @@ const FileDocPage = () => {
                 ))}
               </ul>
             </div>
-            <div className="calendar-side-card chat-card">
-              <div className="calendar-chat-head">
+            <aside
+              className={`doc-chat-card calendar-doc-chat ${
+                chatDocked ? "open" : "collapsed"
+              }`}
+            >
+              <div className="doc-chat-card-head">
                 <div>
-                  <span>Companion chat</span>
-                  <strong>Live calendar thread</strong>
+                  <strong>Drive Companion</strong>
+                  <span>Synced to your calendar</span>
                 </div>
-                <button type="button" className="ghost tiny subtle">
-                  Ask Companion
+                <button
+                  type="button"
+                  className="ghost subtle"
+                  onClick={() => setChatDocked((prev) => !prev)}
+                >
+                  {chatDocked ? "Hide" : "Show"}
                 </button>
               </div>
-              <div className="chat-stack calendar-chat-stack">
-                <div className="chat-feed">
-                  {calendarChatHistory.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`chat-bubble ${message.role}`}
-                    >
-                      <div className="calendar-chat-label">
-                        <strong>{message.author}</strong>
-                        <small>{message.stamp}</small>
-                        <span>{message.tag}</span>
-                      </div>
-                      <span>{message.text}</span>
-                      {message.detail ? (
-                        <small className="calendar-chat-detail">
-                          {message.detail}
+              {chatDocked ? (
+                <>
+                  <div className="chat-feed">
+                    {calendarChatHistory.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`chat-bubble ${message.role}`}
+                      >
+                        <span>{message.text}</span>
+                        {message.detail ? (
+                          <small className="calendar-chat-detail">
+                            {message.detail}
+                          </small>
+                        ) : null}
+                        <small className="calendar-chat-meta-line">
+                          {message.author} · {message.stamp} · {message.tag}
                         </small>
-                      ) : null}
-                      {message.action ? (
-                        <button type="button" className="ghost tiny">
-                          {message.action}
-                        </button>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-                <form className="chat-form" onSubmit={handleCalendarChatSubmit}>
-                  <input
-                    value={calendarChatPrompt}
-                    onChange={(event) =>
-                      setCalendarChatPrompt(event.target.value)
-                    }
-                    placeholder="“Hold 30 minutes before the robotics shuttle…”"
-                  />
-                  <button type="submit">Send</button>
-                </form>
-                <div className="chat-meta">
-                  <span>Companion syncs Drive + Calendar every 5 min.</span>
-                  <Link className="ghost subtle tiny" to="/companion">
-                    Open Companion
-                  </Link>
-                </div>
-              </div>
-            </div>
+                        {message.action ? (
+                          <button type="button" className="ghost tiny">
+                            {message.action}
+                          </button>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                  <form
+                    className="chat-form"
+                    onSubmit={handleCalendarChatSubmit}
+                  >
+                    <input
+                      value={calendarChatPrompt}
+                      onChange={(event) =>
+                        setCalendarChatPrompt(event.target.value)
+                      }
+                      placeholder="Ask Companion to protect a block…"
+                    />
+                    <button type="submit">Send</button>
+                  </form>
+                  <div className="chat-meta">
+                    <span>Companion syncs Drive + Calendar every 5 min.</span>
+                    <Link className="ghost subtle tiny" to="/companion">
+                      Open Companion
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <p className="doc-chat-hint">
+                  Companion chat is docked. Tap show to reopen.
+                </p>
+              )}
+            </aside>
             <div className="calendar-side-card">
               <h4>AI block recommendations</h4>
               <div className="calendar-side-proposals">
@@ -4531,8 +4421,6 @@ const CalendarWeekGallery = ({
 const CalendarDayTimeline = ({
   entries,
   dayLabel,
-  startMinutes,
-  endMinutes,
 }: CalendarDayTimelineProps) => {
   const dayEntries = entries
     .filter((entry) => entry.day === dayLabel)
@@ -4540,69 +4428,45 @@ const CalendarDayTimeline = ({
   if (!dayEntries.length) {
     return null;
   }
-  const totalMinutes = Math.max(endMinutes - startMinutes, 60);
-  const hourMarks = Array.from(
-    { length: Math.floor(totalMinutes / 60) + 1 },
-    (_, index) => startMinutes + index * 60
-  );
-  const formatLabel = (minutes: number) => {
-    const hour = Math.floor(minutes / 60);
-    const suffix = hour >= 12 ? "PM" : "AM";
-    const displayHour = hour % 12 || 12;
-    return `${displayHour} ${suffix}`;
+  const formatDuration = (start: number, end: number) => {
+    const minutes = Math.max(end - start, 15);
+    const hours = Math.floor(minutes / 60);
+    const remainder = minutes % 60;
+    if (!hours) {
+      return `${minutes} min`;
+    }
+    if (!remainder) {
+      return `${hours} hr${hours > 1 ? "s" : ""}`;
+    }
+    return `${hours} hr ${remainder} min`;
   };
-  const timelineHeight = 640;
-  const minBlockHeight = 120;
-  const trackStyle = { height: `${timelineHeight}px` };
+  const formatSourceLabel = (source?: CalendarEntry["source"]) =>
+    source === "companion" ? "AI block" : "Manual block";
   return (
-    <div className="calendar-timeline">
-      <div className="calendar-timeline-hours" style={trackStyle}>
-        {hourMarks.map((minutes) => {
-          const offset = minutes - startMinutes;
-          const top = (offset / totalMinutes) * timelineHeight;
-          return (
-            <span key={`timeline-hour-${minutes}`} style={{ top: `${top}px` }}>
-              {formatLabel(minutes)}
-            </span>
-          );
-        })}
-      </div>
-      <div className="calendar-timeline-track" style={trackStyle}>
-        {dayEntries.map((entry) => {
-          const clampedStart = Math.max(entry.startMinutes, startMinutes);
-          const clampedEnd = Math.min(entry.endMinutes, endMinutes);
-          const offset = clampedStart - startMinutes;
-          const duration = Math.max(clampedEnd - clampedStart, 30);
-          const top = (offset / totalMinutes) * timelineHeight;
-          const height = Math.max(
-            (duration / totalMinutes) * timelineHeight,
-            minBlockHeight
-          );
-          const sourceLabel =
-            entry.source === "companion" ? "AI hold" : "Manual";
-          return (
-            <div
-              key={`timeline-block-${entry.id}`}
-              className={`calendar-timeline-block ${entry.color}`}
-              style={{ top: `${top}px`, height: `${height}px` }}
+    <div className="calendar-timeline-list">
+      {dayEntries.map((entry) => (
+        <article
+          key={`timeline-card-${entry.id}`}
+          className={`calendar-timeline-card ${entry.color}`}
+        >
+          <div className="calendar-timeline-card-head">
+            <span className="calendar-timeline-slot">{entry.time}</span>
+            <span
+              className={`calendar-timeline-source-tag ${
+                entry.source ?? "manual"
+              }`}
             >
-              <div className="calendar-timeline-time">{entry.time}</div>
-              <strong>{entry.title}</strong>
-              <span className="calendar-timeline-location">
-                {entry.location}
-              </span>
-              <span className="calendar-timeline-meta">{entry.meta}</span>
-              <span
-                className={`calendar-timeline-source ${
-                  entry.source ?? "manual"
-                }`}
-              >
-                {sourceLabel}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+              {formatSourceLabel(entry.source)}
+            </span>
+          </div>
+          <strong>{entry.title}</strong>
+          <p>{entry.meta}</p>
+          <div className="calendar-timeline-card-foot">
+            <span>{entry.location}</span>
+            <span>{formatDuration(entry.startMinutes, entry.endMinutes)}</span>
+          </div>
+        </article>
+      ))}
     </div>
   );
 };

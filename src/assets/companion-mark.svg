@@ -1,0 +1,20 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="markBG" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F5F8FF"/>
+    </linearGradient>
+    <linearGradient id="markRing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E6ECF7"/>
+      <stop offset="100%" stop-color="#D4E1FF"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#markBG)" stroke="url(#markRing)" stroke-width="2"/>
+  <path d="M32 6L43 32L32 43L21 32L32 6Z" fill="#4285F4"/>
+  <path d="M58 32L32 43L21 32L32 21L58 32Z" fill="#34A853"/>
+  <path d="M32 58L21 32L32 21L43 32L32 58Z" fill="#FBBC05"/>
+  <path d="M6 32L32 21L43 32L32 43L6 32Z" fill="#EA4335"/>
+  <circle cx="32" cy="32" r="10" fill="#FFFFFF" opacity="0.95"/>
+  <path d="M32 26L28 34H36L32 26Z" fill="#1A73E8" opacity="0.85"/>
+</svg>
+
