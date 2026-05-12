@@ -1,0 +1,963 @@
+/* ============================================================================
+   DRIVE COMPANION — REDESIGN LAYER (Google Workspace-native)
+   ----------------------------------------------------------------------------
+   Visual language: Material 3 Expressive (the newer Google look used in
+   NotebookLM, Gemini in Drive, Calendar's 2024+ refresh) + a Gemini gradient
+   layer for AI moments. White-first surfaces, Google Blue primary, generous
+   rounded corners, soft shadows, Google Sans / Inter type.
+
+   This layers on top of the original App.css. Original component structure
+   is preserved; only the visual chrome changes.
+   ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+   Design tokens
+   ---------------------------------------------------------------------------- */
+:root {
+  /* Surface palette — Google Workspace whites + warm grays */
+  --bg: #FFFFFF;
+  --bg-soft: #F8FAFD;          /* sidebar wash */
+  --bg-subtle: #F1F3F4;        /* hover / pressed */
+  --surface: #FFFFFF;
+  --surface-elev: #FFFFFF;
+
+  /* Text — Material color tokens */
+  --ink: #1F1F1F;              /* on-surface */
+  --ink-soft: #444746;          /* secondary text */
+  --muted: #5F6368;             /* tertiary / icons */
+  --muted-strong: #3C4043;
+  --on-primary: #FFFFFF;
+
+  /* Borders / outlines */
+  --border: #DADCE0;
+  --border-strong: #BDC1C6;
+  --hairline: #E8EAED;
+
+  /* Primary — Google Blue (M3 surface blue) */
+  --primary: #0B57D0;
+  --primary-hover: #155CC1;
+  --primary-soft: #E8F0FE;
+  --primary-wash: #F0F6FE;
+
+  /* Status */
+  --success: #137333;
+  --success-soft: #E6F4EA;
+  --warning: #B06000;
+  --warning-soft: #FEF7E0;
+  --danger: #B3261E;
+  --danger-soft: #FCE8E6;
+
+  /* Gemini AI palette — the gradient used on AI moments across Google */
+  --gemini-1: #4285F4;          /* blue start */
+  --gemini-2: #9B72CB;          /* purple middle */
+  --gemini-3: #D96570;          /* coral end */
+  --gemini-bg: linear-gradient(135deg, #4285F4 0%, #9B72CB 50%, #D96570 100%);
+  --gemini-bg-soft: linear-gradient(135deg, rgba(66,133,244,0.08), rgba(155,114,203,0.08) 50%, rgba(217,101,112,0.08));
+
+  /* Radius — Material 3 Expressive is generous */
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --r-xl: 28px;
+  --r-pill: 999px;
+
+  /* Shadows — soft, low-elevation Material */
+  --elev-0: none;
+  --elev-1: 0 1px 2px rgba(60, 64, 67, 0.08), 0 1px 3px rgba(60, 64, 67, 0.06);
+  --elev-2: 0 1px 2px rgba(60, 64, 67, 0.08), 0 4px 12px rgba(60, 64, 67, 0.06);
+  --elev-3: 0 4px 8px rgba(60, 64, 67, 0.08), 0 12px 24px rgba(60, 64, 67, 0.08);
+  --elev-focus: 0 0 0 3px rgba(11, 87, 208, 0.12);
+
+  /* Typography — Google Sans-style; using Inter as the broadly available stand-in */
+  --font-sans: "Google Sans Text", "Inter Tight", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Google Sans", "Inter Tight", "Inter", sans-serif;
+  --font-mono: "Roboto Mono", "JetBrains Mono", ui-monospace, monospace;
+
+  /* Motion — Material standard easing */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --ease-decel: cubic-bezier(0, 0, 0, 1);
+}
+
+/* ----------------------------------------------------------------------------
+   Foundation
+   ---------------------------------------------------------------------------- */
+html { background: var(--bg); }
+body,
+.drive-app {
+  background: var(--bg) !important;
+  color: var(--ink) !important;
+  font-family: var(--font-sans) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.005em;
+}
+
+/* ----------------------------------------------------------------------------
+   Top bar (.google-bar) — slimmer, Material 3 app bar
+   ---------------------------------------------------------------------------- */
+.google-bar {
+  background: var(--bg) !important;
+  border-bottom: 1px solid var(--hairline) !important;
+  padding: 12px 24px !important;
+  height: 64px;
+  box-sizing: border-box;
+}
+
+.drive-logo {
+  font-family: var(--font-display) !important;
+  font-weight: 500 !important;
+  color: var(--ink) !important;
+  letter-spacing: -0.01em;
+  font-size: 1.1rem !important;
+  font-style: normal !important;
+}
+.drive-logo img {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-xs);
+}
+
+/* Search — Material 3 search bar */
+.search-box {
+  background: var(--bg-soft) !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--r-pill) !important;
+  box-shadow: none !important;
+  transition: background 180ms var(--ease-standard), box-shadow 180ms var(--ease-standard);
+  max-width: 720px;
+  height: 48px;
+}
+.search-box:hover {
+  background: var(--bg-subtle) !important;
+}
+.search-box:focus-within {
+  background: var(--surface) !important;
+  box-shadow: var(--elev-2) !important;
+  border-color: transparent !important;
+}
+.search-box input {
+  color: var(--ink) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.95rem !important;
+}
+.search-box input::placeholder {
+  color: var(--muted) !important;
+}
+
+.persona-toggle {
+  background: var(--bg-subtle) !important;
+  border: none !important;
+  border-radius: var(--r-pill) !important;
+  padding: 3px !important;
+  gap: 0 !important;
+}
+.persona-toggle button {
+  background: transparent !important;
+  color: var(--muted-strong) !important;
+  font-weight: 500 !important;
+  font-size: 0.82rem !important;
+  border-radius: var(--r-pill) !important;
+  padding: 7px 16px !important;
+  transition: all 180ms var(--ease-standard);
+}
+.persona-toggle button.active {
+  background: var(--surface) !important;
+  color: var(--primary) !important;
+  box-shadow: var(--elev-1);
+}
+
+.icon-btn {
+  background: transparent !important;
+  border: none !important;
+  color: var(--muted-strong) !important;
+  border-radius: 50% !important;
+  width: 40px !important;
+  height: 40px !important;
+  padding: 8px !important;
+  transition: background 180ms var(--ease-standard);
+}
+.icon-btn:hover {
+  background: var(--bg-subtle) !important;
+  color: var(--ink) !important;
+}
+
+.avatar {
+  background: linear-gradient(135deg, var(--gemini-1), var(--gemini-2)) !important;
+  color: var(--on-primary) !important;
+  font-weight: 500;
+  width: 32px;
+  height: 32px;
+  font-size: 0.85rem;
+}
+
+/* ----------------------------------------------------------------------------
+   Sidebar (.side-nav) — Google Workspace nav rail
+   ---------------------------------------------------------------------------- */
+.main-area { background: var(--bg) !important; }
+
+.side-nav {
+  background: var(--bg) !important;
+  border-right: 1px solid var(--hairline) !important;
+  padding: 16px 12px !important;
+  width: 256px !important;
+}
+
+/* "New" CTA — Drive's hallmark elevated FAB-style button */
+.new-btn {
+  background: var(--surface) !important;
+  color: var(--ink) !important;
+  font-weight: 500 !important;
+  font-size: 0.92rem !important;
+  letter-spacing: 0;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-md) !important;
+  padding: 12px 20px !important;
+  box-shadow: var(--elev-1) !important;
+  margin: 8px 4px 20px !important;
+  transition: box-shadow 200ms var(--ease-standard), background 200ms var(--ease-standard);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.new-btn:hover {
+  background: var(--bg-soft) !important;
+  box-shadow: var(--elev-2) !important;
+}
+
+.nav-label {
+  color: var(--muted) !important;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase;
+  font-weight: 500 !important;
+  padding: 16px 12px 6px !important;
+}
+
+.nav-link {
+  color: var(--ink-soft) !important;
+  font-weight: 500 !important;
+  font-size: 0.88rem !important;
+  border-radius: 0 var(--r-pill) var(--r-pill) 0 !important;
+  margin-right: 8px;
+  padding: 10px 16px 10px 20px !important;
+  gap: 12px !important;
+  transition: background 180ms var(--ease-standard), color 180ms var(--ease-standard);
+  position: relative;
+}
+.nav-link:hover {
+  background: var(--bg-subtle) !important;
+  color: var(--ink) !important;
+}
+.nav-link.active {
+  background: var(--primary-soft) !important;
+  color: var(--primary) !important;
+  font-weight: 600 !important;
+}
+
+/* ----------------------------------------------------------------------------
+   Content area
+   ---------------------------------------------------------------------------- */
+.content-area {
+  background: var(--bg) !important;
+  padding: 24px 32px 64px !important;
+}
+
+.content-header {
+  margin-bottom: 24px;
+}
+.content-header h2 {
+  font-family: var(--font-display) !important;
+  font-weight: 500 !important;
+  font-size: clamp(1.8rem, 3vw, 2.25rem) !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.15 !important;
+  color: var(--ink) !important;
+  font-style: normal !important;
+  margin: 0 0 8px !important;
+}
+.content-header p {
+  color: var(--ink-soft) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.5 !important;
+  max-width: 70ch;
+}
+
+/* Eyebrow now reads like a Material section label */
+.eyebrow {
+  color: var(--primary) !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase;
+  margin-bottom: 8px !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.eyebrow::before { content: none; }
+
+/* ----------------------------------------------------------------------------
+   Stat cards — Material 3 outlined card with hover elevation
+   ---------------------------------------------------------------------------- */
+.stat-grid {
+  gap: 16px !important;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-lg) !important;
+  padding: 20px 22px !important;
+  box-shadow: none !important;
+  transition: box-shadow 200ms var(--ease-standard), border-color 200ms var(--ease-standard), transform 200ms var(--ease-standard);
+  position: relative;
+}
+.stat-card:hover {
+  box-shadow: var(--elev-2) !important;
+  border-color: transparent !important;
+  transform: translateY(-1px);
+}
+
+.stat-card strong {
+  font-family: var(--font-display) !important;
+  font-weight: 500 !important;
+  font-style: normal !important;
+  font-size: 2.4rem !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.03em !important;
+  color: var(--ink) !important;
+  display: block;
+  margin-bottom: 8px;
+}
+.stat-card p {
+  color: var(--ink-soft) !important;
+  font-size: 0.88rem !important;
+  line-height: 1.4;
+}
+/* Use the colored variants as subtle accent indicators */
+.stat-card.blue { border-top: 3px solid var(--primary) !important; padding-top: 17px !important; }
+.stat-card.pink { border-top: 3px solid var(--gemini-3) !important; padding-top: 17px !important; }
+.stat-card.green { border-top: 3px solid var(--success) !important; padding-top: 17px !important; }
+.stat-card.purple { border-top: 3px solid var(--gemini-2) !important; padding-top: 17px !important; }
+
+.stat-label span {
+  color: var(--muted) !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.stat-label small {
+  color: var(--muted) !important;
+}
+
+/* ----------------------------------------------------------------------------
+   Generic cards / panels — unified Material card
+   ---------------------------------------------------------------------------- */
+.panel,
+.usecase-card,
+.calendar-mini-card,
+.calendar-panel,
+.calendar-day-card,
+.calendar-side-card,
+.companion-preview,
+.focus-panel,
+.calendar-insight-card,
+.calendar-timeline-card,
+.table-panel {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-md) !important;
+  box-shadow: none !important;
+  transition: box-shadow 200ms var(--ease-standard), border-color 200ms var(--ease-standard);
+}
+.panel:hover,
+.usecase-card:hover,
+.calendar-mini-card:hover,
+.companion-preview:hover {
+  box-shadow: var(--elev-2) !important;
+  border-color: transparent !important;
+}
+
+/* Calendar mini cards — keep colored top rail, white surface */
+.calendar-mini-card.blue,
+.calendar-mini-card.green,
+.calendar-mini-card.pink,
+.calendar-mini-card.orange {
+  background: var(--surface) !important;
+  position: relative;
+  padding-top: 16px !important;
+}
+.calendar-mini-card.blue::before,
+.calendar-mini-card.green::before,
+.calendar-mini-card.pink::before,
+.calendar-mini-card.orange::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 0;
+  height: 3px;
+  border-radius: 0 0 2px 2px;
+}
+.calendar-mini-card.blue::before { background: var(--primary); }
+.calendar-mini-card.green::before { background: var(--success); }
+.calendar-mini-card.pink::before { background: var(--gemini-3); }
+.calendar-mini-card.orange::before { background: var(--warning); }
+
+.calendar-mini-chip {
+  background: var(--bg-subtle) !important;
+  color: var(--ink-soft) !important;
+  font-weight: 500 !important;
+}
+.calendar-mini-card.blue .calendar-mini-chip {
+  background: var(--primary-soft) !important;
+  color: var(--primary) !important;
+}
+.calendar-mini-card.green .calendar-mini-chip {
+  background: var(--success-soft) !important;
+  color: var(--success) !important;
+}
+.calendar-mini-card.pink .calendar-mini-chip {
+  background: rgba(217, 101, 112, 0.1) !important;
+  color: var(--gemini-3) !important;
+}
+
+.calendar-mini-head span {
+  color: var(--primary) !important;
+  font-weight: 600 !important;
+}
+.calendar-mini-content strong {
+  color: var(--ink) !important;
+  font-size: 0.96rem !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.005em;
+}
+.calendar-mini-content span {
+  color: var(--ink-soft) !important;
+}
+.calendar-mini-content small {
+  color: var(--muted) !important;
+}
+
+/* ----------------------------------------------------------------------------
+   Insight banner — the Gemini AI announcement
+   This is where the AI-product feel goes biggest
+   ---------------------------------------------------------------------------- */
+.insight-banner {
+  background: linear-gradient(135deg, rgba(66,133,244,0.08), rgba(155,114,203,0.08) 50%, rgba(217,101,112,0.08)) !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--r-md) !important;
+  position: relative;
+  overflow: hidden;
+  padding: 18px 22px !important;
+}
+.insight-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: var(--r-md);
+  background: var(--gemini-bg);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.5;
+}
+.insight-banner h3 {
+  font-family: var(--font-display) !important;
+  font-style: normal !important;
+  font-weight: 500 !important;
+  color: var(--ink) !important;
+  letter-spacing: -0.015em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.insight-banner h3::before {
+  content: "✦";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--gemini-bg);
+  color: white;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.insight-banner p {
+  color: var(--ink-soft) !important;
+}
+
+/* ----------------------------------------------------------------------------
+   Use case cards
+   ---------------------------------------------------------------------------- */
+.usecase-row { gap: 14px !important; }
+
+.usecase-card {
+  padding: 20px !important;
+  cursor: pointer;
+}
+.usecase-card.active {
+  border-color: var(--primary) !important;
+  background: var(--primary-soft) !important;
+  box-shadow: var(--elev-1) !important;
+}
+.usecase-icon {
+  background: var(--primary-soft) !important;
+  color: var(--primary) !important;
+  border-radius: var(--r-md) !important;
+}
+.usecase-card.active .usecase-icon {
+  background: var(--primary) !important;
+  color: var(--on-primary) !important;
+}
+.usecase-card h4 {
+  font-family: var(--font-display) !important;
+  font-weight: 500 !important;
+  font-size: 0.98rem !important;
+  letter-spacing: -0.01em;
+  color: var(--ink) !important;
+}
+.usecase-card p {
+  color: var(--ink-soft) !important;
+  font-size: 0.85rem !important;
+  line-height: 1.45;
+}
+
+/* ----------------------------------------------------------------------------
+   Material 3 buttons — .primary (filled), .ghost (text/outlined)
+   ---------------------------------------------------------------------------- */
+button.primary,
+.primary {
+  background: var(--primary) !important;
+  color: var(--on-primary) !important;
+  border: none !important;
+  border-radius: var(--r-pill) !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 500 !important;
+  font-size: 0.88rem !important;
+  letter-spacing: 0.01em;
+  padding: 10px 22px !important;
+  box-shadow: var(--elev-1);
+  transition: box-shadow 200ms var(--ease-standard), background 180ms var(--ease-standard), transform 200ms var(--ease-standard);
+  cursor: pointer;
+}
+button.primary:hover,
+.primary:hover {
+  background: var(--primary-hover) !important;
+  box-shadow: var(--elev-2);
+}
+button.primary:active,
+.primary:active {
+  transform: translateY(0);
+}
+
+button.ghost,
+.ghost {
+  background: transparent !important;
+  color: var(--primary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-pill) !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 500 !important;
+  font-size: 0.88rem !important;
+  letter-spacing: 0.01em;
+  padding: 9px 21px !important;
+  transition: background 180ms var(--ease-standard), border-color 180ms var(--ease-standard);
+  cursor: pointer;
+}
+button.ghost:hover,
+.ghost:hover {
+  background: var(--primary-soft) !important;
+  border-color: var(--primary-soft) !important;
+}
+
+/* ----------------------------------------------------------------------------
+   Buttons / chips / links
+   ---------------------------------------------------------------------------- */
+.chip-row { gap: 8px !important; }
+.chip-row button,
+.demo-links a {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--ink) !important;
+  border-radius: var(--r-pill) !important;
+  padding: 8px 16px !important;
+  font-weight: 500 !important;
+  font-size: 0.86rem !important;
+  transition: background 180ms var(--ease-standard), border-color 180ms var(--ease-standard);
+}
+.chip-row button:hover,
+.demo-links a:hover {
+  background: var(--bg-subtle) !important;
+  border-color: var(--border-strong) !important;
+}
+.chip-row button.active,
+.demo-links a.active {
+  background: var(--primary-soft) !important;
+  color: var(--primary) !important;
+  border-color: var(--primary-soft) !important;
+  font-weight: 600 !important;
+}
+
+.text-link {
+  color: var(--primary) !important;
+  font-weight: 500 !important;
+  transition: color 180ms var(--ease-standard);
+}
+.text-link:hover { color: var(--primary-hover) !important; }
+
+.badge {
+  background: var(--bg-subtle) !important;
+  color: var(--ink-soft) !important;
+  border: none !important;
+  border-radius: var(--r-pill) !important;
+  font-size: 0.72rem !important;
+  font-weight: 500 !important;
+  padding: 4px 10px !important;
+}
+.badge.student {
+  background: var(--primary-soft) !important;
+  color: var(--primary) !important;
+}
+.badge.pro {
+  background: rgba(217, 101, 112, 0.1) !important;
+  color: var(--gemini-3) !important;
+}
+
+/* ----------------------------------------------------------------------------
+   Panel heads
+   ---------------------------------------------------------------------------- */
+.panel-head h4 {
+  font-family: var(--font-display) !important;
+  font-weight: 500 !important;
+  font-size: 1rem !important;
+  letter-spacing: -0.005em;
+  color: var(--ink) !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-head p {
+  color: var(--ink-soft) !important;
+  font-size: 0.86rem !important;
+}
+.panel-head .ghost {
+  color: var(--primary) !important;
+  font-weight: 500;
+}
+
+/* ----------------------------------------------------------------------------
+   Calendar sidebar panel header — show the "Calendar sync" tab nicely
+   ---------------------------------------------------------------------------- */
+.calendar-panel { padding: 16px !important; }
+.calendar-panel.sidebar .panel-head h4 { font-size: 0.95rem !important; }
+.calendar-panel.sidebar .panel-head p { font-size: 0.8rem !important; color: var(--muted) !important; }
+
+/* ----------------------------------------------------------------------------
+   Whisper / Companion suggestion cards — AI-touched surfaces
+   ---------------------------------------------------------------------------- */
+.suggestion {
+  border-radius: var(--r-md) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+  padding: 14px 16px !important;
+  transition: box-shadow 200ms var(--ease-standard), border-color 200ms var(--ease-standard);
+}
+.suggestion:hover {
+  box-shadow: var(--elev-2) !important;
+  border-color: transparent !important;
+}
+.suggestion-chip {
+  background: var(--gemini-bg) !important;
+  color: var(--on-primary) !important;
+  border-radius: var(--r-pill) !important;
+  padding: 3px 10px !important;
+  font-size: 0.7rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.suggestion-chip::before {
+  content: "✦";
+  font-size: 0.9em;
+}
+.suggestion-time {
+  color: var(--muted) !important;
+  font-size: 0.72rem !important;
+  font-weight: 500 !important;
+}
+.suggestion-message {
+  color: var(--ink) !important;
+  font-size: 0.92rem !important;
+  line-height: 1.45;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+.suggestion-icon {
+  border-radius: var(--r-sm) !important;
+  background: linear-gradient(135deg, rgba(66,133,244,0.12), rgba(155,114,203,0.12)) !important;
+  color: var(--gemini-2) !important;
+}
+.suggestion-action {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--gemini-2) !important;
+  border-radius: var(--r-pill) !important;
+  padding: 5px 13px !important;
+  font-weight: 500 !important;
+  font-size: 0.8rem !important;
+  transition: background 180ms var(--ease-standard), border-color 180ms var(--ease-standard);
+}
+.suggestion-action:hover {
+  background: var(--gemini-bg-soft) !important;
+  border-color: transparent !important;
+}
+.suggestion-dismiss {
+  background: transparent !important;
+  border: none !important;
+  color: var(--muted) !important;
+  font-weight: 500 !important;
+  font-size: 0.8rem !important;
+  padding: 5px 10px !important;
+  border-radius: var(--r-pill) !important;
+  transition: background 180ms var(--ease-standard);
+}
+.suggestion-dismiss:hover {
+  background: var(--bg-subtle) !important;
+}
+
+/* Chat suggestion prompt chips — pre-filled Gemini-style AI prompts */
+.chat-chip {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--ink) !important;
+  border-radius: var(--r-pill) !important;
+  padding: 7px 14px !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 500 !important;
+  font-size: 0.82rem !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 180ms var(--ease-standard), border-color 180ms var(--ease-standard);
+}
+.chat-chip::before {
+  content: "✦";
+  display: inline-flex;
+  background: var(--gemini-bg);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 0.95em;
+}
+.chat-chip:hover {
+  background: var(--gemini-bg-soft) !important;
+  border-color: transparent !important;
+}
+
+/* Chat / companion intel cards */
+.companion-intel-card,
+.section-card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-md) !important;
+  padding: 18px !important;
+}
+.chat-bubble {
+  background: var(--bg-soft) !important;
+  border: 1px solid var(--hairline) !important;
+  border-radius: var(--r-md) !important;
+  color: var(--ink) !important;
+  padding: 12px 16px !important;
+}
+.chat-bubble.agent,
+.chat-bubble[data-role="agent"] {
+  background: var(--gemini-bg-soft) !important;
+  border-color: transparent !important;
+}
+
+/* ----------------------------------------------------------------------------
+   AI moments — Gemini-flavored utilities
+   ---------------------------------------------------------------------------- */
+
+/* Sparkle iconography — append a 4-point gradient star to any element */
+.ai-sparkle::before {
+  content: "✦";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  background: var(--gemini-bg);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 1.1em;
+}
+
+/* Pill button styled like a Gemini AI action — overrides .primary when combined */
+.ai-action,
+button.ai-action,
+.primary.ai-action {
+  background: var(--gemini-bg) !important;
+  color: var(--on-primary) !important;
+  border: none !important;
+  border-radius: var(--r-pill) !important;
+  font-weight: 500 !important;
+  padding: 10px 22px !important;
+  box-shadow: var(--elev-1);
+  transition: box-shadow 200ms var(--ease-standard), transform 200ms var(--ease-standard), filter 200ms var(--ease-standard);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+.ai-action::before {
+  content: "✦";
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.95em;
+  color: var(--on-primary);
+}
+.ai-action:hover {
+  box-shadow: var(--elev-2);
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+/* AI-touched gradient outline — for content that AI generated */
+.ai-touched {
+  position: relative;
+  border: 1px solid transparent !important;
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    var(--gemini-bg) border-box !important;
+}
+
+/* Streaming AI text — typed-in feel with blinking cursor */
+@keyframes ai-stream-in {
+  from { opacity: 0; transform: translateY(2px); filter: blur(3px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.ai-streaming {
+  animation: ai-stream-in 600ms var(--ease-decel) both;
+}
+.ai-streaming::after {
+  content: "▋";
+  display: inline-block;
+  color: var(--gemini-2);
+  animation: ai-cursor 1s steps(2) infinite;
+  margin-left: 2px;
+}
+@keyframes ai-cursor { 50% { opacity: 0; } }
+
+/* AI thinking shimmer skeleton */
+@keyframes ai-shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+.ai-loading {
+  background: linear-gradient(
+    90deg,
+    var(--bg-subtle) 0%,
+    rgba(155, 114, 203, 0.12) 50%,
+    var(--bg-subtle) 100%
+  );
+  background-size: 200% 100%;
+  animation: ai-shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--r-sm);
+}
+
+/* Pulsing dot for live AI activity */
+.ai-pulse {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gemini-2);
+  flex-shrink: 0;
+}
+.ai-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: var(--gemini-2);
+  opacity: 0.3;
+  animation: ai-ping 1.8s var(--ease-standard) infinite;
+}
+@keyframes ai-ping {
+  0% { transform: scale(0.5); opacity: 0.55; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+/* Animated stat counters on mount */
+@keyframes count-in {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.stat-card strong {
+  animation: count-in 600ms var(--ease-emphasized) both;
+}
+.stat-card:nth-child(2) strong { animation-delay: 60ms; }
+.stat-card:nth-child(3) strong { animation-delay: 120ms; }
+.stat-card:nth-child(4) strong { animation-delay: 180ms; }
+
+/* Content-area page mount */
+@keyframes content-fade-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.content-area > * {
+  animation: content-fade-up 380ms var(--ease-decel) both;
+}
+.content-area > *:nth-child(1) { animation-delay: 0ms; }
+.content-area > *:nth-child(2) { animation-delay: 40ms; }
+.content-area > *:nth-child(3) { animation-delay: 80ms; }
+.content-area > *:nth-child(4) { animation-delay: 120ms; }
+.content-area > *:nth-child(5) { animation-delay: 160ms; }
+
+/* ----------------------------------------------------------------------------
+   Selection + focus
+   ---------------------------------------------------------------------------- */
+::selection {
+  background: var(--primary-soft);
+  color: var(--ink);
+}
+*:focus-visible {
+  outline: none;
+  box-shadow: var(--elev-focus);
+  border-radius: var(--r-xs);
+}
+
+/* ----------------------------------------------------------------------------
+   Scrollbar (webkit) — slim Google style
+   ---------------------------------------------------------------------------- */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--r-pill);
+  border: 2px solid var(--bg);
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ----------------------------------------------------------------------------
+   Reduced motion
+   ---------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

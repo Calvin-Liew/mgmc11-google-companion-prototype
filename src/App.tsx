@@ -16,6 +16,7 @@ import {
   useParams,
 } from "react-router-dom";
 import "./App.css";
+import "./redesign.css";
 import companionMark from "./assets/companion-mark.svg";
 
 type Persona = "student" | "professional";
@@ -1927,7 +1928,7 @@ function App() {
               </>
             ) : (
               <div className="tour-primary-actions">
-                <button type="button" className="primary" onClick={startTour}>
+                <button type="button" className="primary ai-action" onClick={startTour}>
                   Play guided tour
                 </button>
                 <button
@@ -2242,7 +2243,7 @@ function App() {
               </div>
               <div className="cta-row">
                 <button className="ghost">View in Calendar</button>
-                <button className="primary">Create Week 1 To-Do List</button>
+                <button className="primary ai-action">Create Week 1 To-Do List</button>
               </div>
             </div>
             <div className="section-card">
@@ -2299,7 +2300,7 @@ function App() {
               </div>
               <div className="cta-row">
                 <button className="primary">Open summary</button>
-                <button className="ghost">Generate Slides Summary</button>
+                <button className="primary ai-action">Generate Slides Summary</button>
               </div>
             </div>
             <div className="section-card">
@@ -2441,7 +2442,7 @@ function App() {
                 ))}
               </div>
               <div className="cta-row">
-                <button className="primary">
+                <button className="primary ai-action">
                   Draft recap email to stakeholders
                 </button>
                 <button className="ghost">Sync to Tasks</button>
@@ -2480,7 +2481,7 @@ function App() {
                 ))}
               </ul>
               <div className="cta-row">
-                <button className="primary">Generate talking points</button>
+                <button className="primary ai-action">Generate talking points</button>
                 <button className="ghost">Share brief</button>
               </div>
             </div>
@@ -2531,7 +2532,7 @@ function App() {
                 ))}
               </div>
               <div className="cta-row">
-                <button className="primary">Rebalance day</button>
+                <button className="primary ai-action">Rebalance day</button>
                 <button className="ghost">Accept focus block</button>
               </div>
             </div>
@@ -3053,7 +3054,7 @@ function App() {
                   : "Meetings, decks, and calendars stay synced automatically."}
               </span>
               <button
-                className="primary"
+                className="primary ai-action"
                 type="button"
                 onClick={() => handleUseCaseClick(personaSpotlight)}
               >
@@ -3236,7 +3237,9 @@ function App() {
           <div className="panel calendar-panel mini">
             <div className="panel-head">
               <div>
-                <h4>Calendar sync</h4>
+                <h4>
+                  <span className="ai-pulse" aria-hidden="true" /> Calendar sync
+                </h4>
                 <p>
                   Live Google Calendar preview. Companion keeps it in sync.
                 </p>
@@ -3613,7 +3616,9 @@ function App() {
           <div className="companion-intel-card companion-suggestions">
             <div className="companion-intel-head">
               <div>
-                <h4>Drive Whisper</h4>
+                <h4>
+                  <span className="ai-pulse" aria-hidden="true" /> Drive Whisper
+                </h4>
                 <p>Live nudges from Companion.</p>
               </div>
             </div>
